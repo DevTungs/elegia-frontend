@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Launch Countdown</title>
+<style>
+    body {
+        margin: 0;
+        background: transparent;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .container {
+        display: inline-block;
+        padding: 12px 20px;
+        background: linear-gradient(90deg, #ff2d55, #6a00ff);
+        color: white;
+        font-weight: bold;
+        text-align: center;
+        clip-path: polygon(0 0, 100% 0, 95% 100%, 0% 100%);
+    }
+
+    .title {
+        font-size: 14px;
+        letter-spacing: 1px;
+        opacity: 0.9;
+    }
+
+    .time {
+        font-size: 28px;
+        margin-top: 4px;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="title">ARTEMIS II LAUNCH - NANDA / VINI</div>
+    <div class="time" id="countdown">L- 00:00:00</div>
+</div>
+
+<script>
+    // 👉 DEFINE A DATA DO LANÇAMENTO AQUI
+    const launchDate = new Date("2026-04-01T19:24:30").getTime();
+
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = launchDate - now;
+
+        if (distance <= 0) {
+            document.getElementById("countdown").innerHTML = "LIFTOFF 🚀";
+            return;
+        }
+
+        const hours = Math.floor(distance / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("countdown").innerHTML =
+            "L- " +
+            String(hours).padStart(2, '0') + ":" +
+            String(minutes).padStart(2, '0') + ":" +
+            String(seconds).padStart(2, '0');
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,342 @@
+import { useState } from "react";
+import { type CartItem, type BillingType, type CheckoutCustomer } from "@/types/merch";
+import { checkoutService } from "@/services/checkout";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, CreditCard, QrCode, Banknote, Truck } from "lucide-react";
+import { toast } from "sonner";
+
+interface CheckoutFormProps {
+  items: CartItem[];
+  total: number;
+  shipping: number;
+  onSuccess: () => void;
+  onCancel: () => void;
+}
+
+const formatCpfCnpj = (value: string) => {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length <= 11) {
+    return digits
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+  }
+  return digits
+    .replace(/(\d{2})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1.$2")
+    .replace(/(\d{3})(\d)/, "$1/$2")
+    .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
+};
+
+const formatPhone = (value: string) => {
+  const digits = value.replace(/\D/g, "");
+  if (digits.length <= 10) {
+    return digits.replace(/(\d{2})(\d)/, "($1) $2").replace(/(\d{4})(\d)/, "$1-$2");
+  }
+  return digits
+    .replace(/(\d{2})(\d)/, "($1) $2")
+    .replace(/(\d{5})(\d)/, "$1-$2");
+};
+
+const formatZipCode = (value: string) => {
+  return value.replace(/\D/g, "").replace(/(\d{5})(\d)/, "$1-$2").slice(0, 9);
+};
+
+const formatPrice = (price: number) =>
+  price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: CheckoutFormProps) => {
+  const [customer, setCustomer] = useState<CheckoutCustomer>({
+    name: "",
+    email: "",
+    cpfCnpj: "",
+    phone: "",
+    address: {
+      zipCode: "",
+      street: "",
+      number: "",
+      complement: "",
+      neighborhood: "",
+      city: "",
+      state: "",
+    },
+  });
+  const [billingType, setBillingType] = useState<BillingType>("PIX");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const subtotal = total - shipping;
+
+  const updateAddress = (field: keyof CheckoutCustomer["address"], value: string) => {
+    setCustomer((prev) => ({
+      ...prev,
+      address: { ...prev.address, [field]: value },
+    }));
+  };
+
+  const validateAddress = () => {
+    const { zipCode, street, number, neighborhood, city, state } = customer.address;
+    if (zipCode.replace(/\D/g, "").length !== 8) throw new Error("CEP inválido");
+    if (!street.trim()) throw new Error("Rua é obrigatória");
+    if (!number.trim()) throw new Error("Número é obrigatório");
+    if (!neighborhood.trim()) throw new Error("Bairro é obrigatório");
+    if (!city.trim()) throw new Error("Cidade é obrigatória");
+    if (state.length !== 2) throw new Error("UF inválida");
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (items.length === 0) return;
+
+    setIsLoading(true);
+    try {
+      validateAddress();
+      const result = await checkoutService.createCheckoutSession(items, customer, billingType);
+
+      if (billingType === "PIX" && result.pixPayload) {
+        localStorage.setItem(
+          `elegia-order-${result.orderId}`,
+          JSON.stringify({
+            pixQrCode: result.pixQrCode,
+            pixPayload: result.pixPayload,
+            paymentUrl: result.paymentUrl,
+          })
+        );
+      }
+
+      onSuccess();
+
+      if (billingType === "CREDIT_CARD" && result.paymentUrl) {
+        window.location.href = result.paymentUrl;
+      } else if (billingType === "BOLETO" && result.paymentUrl) {
+        window.open(result.paymentUrl, "_blank");
+      } else {
+        window.location.href = `/merch/success?order_id=${result.orderId}`;
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Erro ao finalizar compra");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const billingOptions: { value: BillingType; label: string; icon: React.ReactNode }[] = [
+    { value: "PIX", label: "PIX", icon: <QrCode size={18} /> },
+    { value: "BOLETO", label: "Boleto", icon: <Banknote size={18} /> },
+    { value: "CREDIT_CARD", label: "Cartão", icon: <CreditCard size={18} /> },
+  ];
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="space-y-2">
+        <Label htmlFor="checkout-name">Nome completo *</Label>
+        <Input
+          id="checkout-name"
+          value={customer.name}
+          onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
+          required
+          placeholder="Seu nome"
+          className="bg-background"
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="checkout-email">E-mail *</Label>
+          <Input
+            id="checkout-email"
+            type="email"
+            value={customer.email}
+            onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
+            required
+            placeholder="seu@email.com"
+            className="bg-background"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="checkout-phone">Telefone</Label>
+          <Input
+            id="checkout-phone"
+            type="tel"
+            value={customer.phone}
+            onChange={(e) => setCustomer({ ...customer, phone: formatPhone(e.target.value) })}
+            placeholder="(00) 00000-0000"
+            maxLength={15}
+            className="bg-background"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="checkout-cpf">CPF/CNPJ *</Label>
+        <Input
+          id="checkout-cpf"
+          value={customer.cpfCnpj}
+          onChange={(e) => setCustomer({ ...customer, cpfCnpj: formatCpfCnpj(e.target.value) })}
+          required
+          placeholder="000.000.000-00"
+          maxLength={18}
+          className="bg-background"
+        />
+      </div>
+
+      <div className="pt-4 border-t border-white/[0.06]">
+        <div className="flex items-center gap-2 mb-4">
+          <Truck size={18} className="text-primary" />
+          <h3 className="font-bold uppercase tracking-wider text-sm">Endereço de entrega</h3>
+        </div>
+
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="checkout-zip">CEP *</Label>
+              <Input
+                id="checkout-zip"
+                value={customer.address.zipCode}
+                onChange={(e) => updateAddress("zipCode", formatZipCode(e.target.value))}
+                required
+                placeholder="00000-000"
+                maxLength={9}
+                className="bg-background"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="checkout-state">UF *</Label>
+              <Input
+                id="checkout-state"
+                value={customer.address.state}
+                onChange={(e) => updateAddress("state", e.target.value.toUpperCase().slice(0, 2))}
+                required
+                placeholder="SP"
+                maxLength={2}
+                className="bg-background"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="checkout-street">Rua *</Label>
+            <Input
+              id="checkout-street"
+              value={customer.address.street}
+              onChange={(e) => updateAddress("street", e.target.value)}
+              required
+              placeholder="Nome da rua"
+              className="bg-background"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="checkout-number">Número *</Label>
+              <Input
+                id="checkout-number"
+                value={customer.address.number}
+                onChange={(e) => updateAddress("number", e.target.value)}
+                required
+                placeholder="123"
+                className="bg-background"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="checkout-complement">Complemento</Label>
+              <Input
+                id="checkout-complement"
+                value={customer.address.complement}
+                onChange={(e) => updateAddress("complement", e.target.value)}
+                placeholder="Apto, bloco"
+                className="bg-background"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="checkout-neighborhood">Bairro *</Label>
+            <Input
+              id="checkout-neighborhood"
+              value={customer.address.neighborhood}
+              onChange={(e) => updateAddress("neighborhood", e.target.value)}
+              required
+              placeholder="Bairro"
+              className="bg-background"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="checkout-city">Cidade *</Label>
+            <Input
+              id="checkout-city"
+              value={customer.address.city}
+              onChange={(e) => updateAddress("city", e.target.value)}
+              required
+              placeholder="Cidade"
+              className="bg-background"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-2 pt-2">
+        <Label>Forma de pagamento</Label>
+        <div className="grid grid-cols-3 gap-2">
+          {billingOptions.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              onClick={() => setBillingType(option.value)}
+              className={`flex flex-col items-center gap-1 p-3 rounded-md border transition-all ${
+                billingType === option.value
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-white/10 bg-secondary text-muted-foreground hover:border-white/30"
+              }`}
+            >
+              {option.icon}
+              <span className="text-xs font-bold uppercase tracking-wider">{option.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-white/[0.06]">
+        <div className="space-y-2 mb-4">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span>{formatPrice(subtotal)}</span>
+          </div>
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">Frete</span>
+            <span>{formatPrice(shipping)}</span>
+          </div>
+          <div className="flex justify-between items-center pt-2 border-t border-white/[0.06]">
+            <span className="font-bold">Total</span>
+            <span className="text-xl font-bold text-primary">{formatPrice(total)}</span>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="w-full py-4 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 transition-all rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {isLoading ? (
+            <>
+              <Loader2 size={18} className="animate-spin" />
+              Processando...
+            </>
+          ) : (
+            "Pagar com Asaas"
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isLoading}
+          className="w-full py-3 mt-2 text-muted-foreground text-sm hover:text-foreground transition-colors"
+        >
+          Voltar ao carrinho
+        </button>
+      </div>
+    </form>
+  );
+};
