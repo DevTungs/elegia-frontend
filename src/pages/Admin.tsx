@@ -168,14 +168,6 @@ const Admin = () => {
     }
   }, [user, isAdmin, authLoading, navigate, toast]);
 
-  useEffect(() => {
-    if (user && isAdmin) {
-      fetchEvents();
-      fetchProducts();
-      fetchOrders();
-    }
-  }, [user, isAdmin, fetchEvents, fetchProducts, fetchOrders]);
-
   const fetchEvents = useCallback(async () => {
     try {
       const data = await api.get<Event[]>("/events");
@@ -208,6 +200,14 @@ const Admin = () => {
       setLoadingOrders(false);
     }
   }, [toast]);
+
+  useEffect(() => {
+    if (user && isAdmin) {
+      fetchEvents();
+      fetchProducts();
+      fetchOrders();
+    }
+  }, [user, isAdmin, fetchEvents, fetchProducts, fetchOrders]);
 
   const updateOrder = async (orderId: string, updates: Partial<Order>) => {
     try {
