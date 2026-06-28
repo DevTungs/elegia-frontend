@@ -63,6 +63,7 @@ export interface UnifiedEvent {
   id: string;
   title: string;
   date: string;
+  time?: string;
   location: string;
   description: string;
   image_url: string;
@@ -71,6 +72,7 @@ export interface UnifiedEvent {
   ticket_cta: string;
   bandsintown_url?: string;
   formatted_date: string;
+  lineup?: string[];
 }
 
 export const fetchBandsintownEvents = async (
@@ -134,18 +136,36 @@ export const normalizeBandsintownEvent = (event: BandsintownEvent): UnifiedEvent
     : rawTitle;
   const date = event.starts_at || event.datetime;
 
+  const formatEventTime = (dateString: string) => {
+    const d = new Date(dateString);
+    return d.toLocaleTimeString("pt-BR", {
+      hour: "2-digit",
+      minute: "2-digit",
+      timeZone: "UTC",
+    });
+  };
+
+  const cleanDescription = event.description
+    ? event.description
+        .replace(/#[A-Za-z0-9\u00C0-\u00FF_]+/g, "")
+        .replace(/\n{3,}/g, "\n\n")
+        .trim()
+    : `Show com ${event.lineup?.join(", ") || artist.name}.`;
+
   return {
     id: `bit-${event.id}`,
     title,
     date,
+    time: formatEventTime(date),
     formatted_date: formatEventDate(date),
     location,
-    description: event.description || `Show com ${event.lineup?.join(", ") || artist.name}.`,
+    description: cleanDescription,
     image_url: artist.image_url || artist.thumb_url,
     ticket_link: ticketLink,
     source: "bandsintown",
     ticket_cta: hasTickets ? "Comprar Ingressos" : "Avise-me",
     bandsintown_url: event.url,
+    lineup: event.lineup?.length ? event.lineup : [artist.name],
   };
 };
 
