@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, CreditCard, QrCode, Banknote, Truck } from "lucide-react";
+import { Loader2, CreditCard, QrCode, Truck } from "lucide-react";
 import { toast } from "sonner";
 
 interface CheckoutFormProps {
@@ -49,6 +49,30 @@ const formatZipCode = (value: string) => {
 const formatPrice = (price: number) =>
   price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+interface ViaCepResponse {
+  cep: string;
+  logradouro: string;
+  complemento: string;
+  bairro: string;
+  localidade: string;
+  uf: string;
+  erro?: boolean;
+}
+
+const fetchAddressByZipCode = async (zipCode: string): Promise<ViaCepResponse | null> => {
+  const digits = zipCode.replace(/\D/g, "");
+  if (digits.length !== 8) return null;
+  try {
+    const response = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (data.erro) return null;
+    return data as ViaCepResponse;
+  } catch {
+    return null;
+  }
+};
+
 export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: CheckoutFormProps) => {
   const [customer, setCustomer] = useState<CheckoutCustomer>({
     name: "",
@@ -67,6 +91,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
   });
   const [billingType, setBillingType] = useState<BillingType>("PIX");
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingZipCode, setIsLoadingZipCode] = useState(false);
 
   const subtotal = total - shipping;
 
@@ -74,6 +99,35 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
     setCustomer((prev) => ({
       ...prev,
       address: { ...prev.address, [field]: value },
+    }));
+  };
+
+  const handleZipCodeChange = async (value: string) => {
+    const formatted = formatZipCode(value);
+    updateAddress("zipCode", formatted);
+
+    const digits = formatted.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+
+    setIsLoadingZipCode(true);
+    const data = await fetchAddressByZipCode(formatted);
+    setIsLoadingZipCode(false);
+
+    if (!data) {
+      toast.error("CEP não encontrado");
+      return;
+    }
+
+    setCustomer((prev) => ({
+      ...prev,
+      address: {
+        ...prev.address,
+        zipCode: formatted,
+        street: data.logradouro || prev.address.street,
+        neighborhood: data.bairro || prev.address.neighborhood,
+        city: data.localidade || prev.address.city,
+        state: data.uf || prev.address.state,
+      },
     }));
   };
 
@@ -125,7 +179,6 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
 
   const billingOptions: { value: BillingType; label: string; icon: React.ReactNode }[] = [
     { value: "PIX", label: "PIX", icon: <QrCode size={18} /> },
-    { value: "BOLETO", label: "Boleto", icon: <Banknote size={18} /> },
     { value: "CREDIT_CARD", label: "Cartão", icon: <CreditCard size={18} /> },
   ];
 
@@ -196,10 +249,11 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
               <Input
                 id="checkout-zip"
                 value={customer.address.zipCode}
-                onChange={(e) => updateAddress("zipCode", formatZipCode(e.target.value))}
+                onChange={(e) => handleZipCodeChange(e.target.value)}
                 required
                 placeholder="00000-000"
                 maxLength={9}
+                disabled={isLoadingZipCode}
                 className="bg-background border-white/[0.08]"
               />
             </div>

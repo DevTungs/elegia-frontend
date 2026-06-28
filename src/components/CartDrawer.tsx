@@ -24,7 +24,7 @@ const CartDrawer = () => {
 
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
-      <SheetContent className="w-full sm:max-w-md bg-card border-white/[0.06] p-0 flex flex-col">
+      <SheetContent className="w-full sm:max-w-md bg-card border-white/[0.06] p-0 flex flex-col h-full gap-0">
         <SheetHeader className="p-6 border-b border-white/[0.06] text-left">
           <div className="flex items-center gap-3">
             {showCheckout && (
@@ -50,7 +50,7 @@ const CartDrawer = () => {
           </div>
         </SheetHeader>
 
-        <ScrollArea className="flex-1 p-6">
+        <ScrollArea className="flex-1 p-6 h-full min-h-0">
           {showCheckout ? (
             <CheckoutForm
               items={items}
