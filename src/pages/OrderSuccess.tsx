@@ -292,7 +292,7 @@ const OrderSuccess = () => {
                     >
                       <a href={order.payment_url} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="h-4 w-4 mr-2" />
-                        Ver no Asaas
+                        Pagar
                       </a>
                     </Button>
                   </div>
