@@ -5,6 +5,7 @@ import { useCart } from "@/hooks/useCart";
 import PageShell from "@/components/PageShell";
 import PageHeader from "@/components/PageHeader";
 import AnimatedSection from "@/components/AnimatedSection";
+import OptimizedImage from "@/components/OptimizedImage";
 import { ShoppingBag, Star, Truck, Minus, Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -131,7 +132,7 @@ const Merch = () => {
                         >
                           <div className="flex flex-col sm:flex-row">
                             <div className="sm:w-48 h-52 sm:h-auto bg-secondary flex-shrink-0 overflow-hidden">
-                              <img
+                              <OptimizedImage
                                 src={getPrimaryImage(product)}
                                 alt={product.name}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
@@ -205,7 +206,7 @@ const Merch = () => {
                           className="group overflow-hidden surface-elevated cursor-pointer transition-all duration-500 hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(220,38,38,0.15)] hover:-translate-y-1"
                         >
                           <div className="aspect-square bg-secondary overflow-hidden relative">
-                            <img
+                            <OptimizedImage
                               src={getPrimaryImage(product)}
                               alt={product.name}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
@@ -264,10 +265,11 @@ const Merch = () => {
                 <div className="grid md:grid-cols-2 gap-0">
                   <div>
                     <div className="aspect-square bg-secondary overflow-hidden">
-                      <img
+                      <OptimizedImage
                         src={getProductImages(selectedProduct)[selectedImageIndex]?.url || selectedProduct.image_url}
                         alt={selectedProduct.name}
                         className="w-full h-full object-cover"
+                        priority
                       />
                     </div>
                     {getProductImages(selectedProduct).length > 1 && (
@@ -282,7 +284,7 @@ const Merch = () => {
                                 : "border-transparent hover:border-white/20"
                             }`}
                           >
-                            <img src={img.url} alt="" className="w-full h-full object-cover" />
+                            <OptimizedImage src={img.url} alt="" className="w-full h-full object-cover" />
                           </button>
                         ))}
                       </div>

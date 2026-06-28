@@ -27,20 +27,20 @@ const durationClasses = {
 };
 
 const getAnimationClasses = (animation: AnimatedSectionProps["animation"], isInView: boolean) => {
-  const base = "transition-all will-change-transform";
+  const base = "transition-opacity transition-transform motion-reduce:transition-none";
 
   if (!isInView) {
     switch (animation) {
       case "fade-up":
-        return "opacity-0 translate-y-12";
+        return `${base} opacity-0 translate-y-8 md:translate-y-12`;
       case "fade-in":
-        return "opacity-0";
+        return `${base} opacity-0`;
       case "slide-left":
-        return "opacity-0 -translate-x-12";
+        return `${base} opacity-0 -translate-x-8 md:-translate-x-12`;
       case "slide-right":
-        return "opacity-0 translate-x-12";
+        return `${base} opacity-0 translate-x-8 md:translate-x-12`;
       case "scale":
-        return "opacity-0 scale-95";
+        return `${base} opacity-0 scale-95`;
       default:
         return "";
     }
@@ -50,11 +50,11 @@ const getAnimationClasses = (animation: AnimatedSectionProps["animation"], isInV
     case "fade-up":
     case "slide-left":
     case "slide-right":
-      return "opacity-100 translate-x-0 translate-y-0";
+      return `${base} opacity-100 translate-x-0 translate-y-0`;
     case "fade-in":
-      return "opacity-100";
+      return `${base} opacity-100`;
     case "scale":
-      return "opacity-100 scale-100";
+      return `${base} opacity-100 scale-100`;
     default:
       return "";
   }

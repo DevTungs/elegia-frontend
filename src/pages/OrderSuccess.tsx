@@ -4,6 +4,7 @@ import { api } from "@/services/api";
 import { type Order } from "@/types/merch";
 import PageShell from "@/components/PageShell";
 import AnimatedSection from "@/components/AnimatedSection";
+import OptimizedImage from "@/components/OptimizedImage";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -253,7 +254,7 @@ const OrderSuccess = () => {
 
                     {activePixData.pixQrCode && (
                       <div className="flex justify-center">
-                        <img
+                        <OptimizedImage
                           src={`data:image/png;base64,${activePixData.pixQrCode}`}
                           alt="QR Code PIX"
                           className="w-48 h-48 bg-white p-2 rounded-lg"

@@ -3,6 +3,7 @@ import { Archive, LockKeyhole, ScanSearch, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import OptimizedImage from "@/components/OptimizedImage";
 import "./EchoOfOrigin.css";
 
 const ACCESS_PASSWORD = "echooforigin";
@@ -208,7 +209,7 @@ const EchoOfOrigin = () => {
 
                 <div className={`lost-reveal ${isRevealed ? "is-visible" : ""}`}>
                   <p className="mb-3 text-xs uppercase tracking-[0.2em] text-zinc-500">capa original recuperada</p>
-                  <img
+                  <OptimizedImage
                     src="/echooforigin/cover.png"
                     alt="Capa do EP Echo Of Origin"
                     className="lost-cover w-full max-w-md rounded-lg border border-white/15"

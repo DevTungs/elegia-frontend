@@ -1,6 +1,7 @@
 import PageShell from "@/components/PageShell";
 import PageHeader from "@/components/PageHeader";
 import AnimatedSection from "@/components/AnimatedSection";
+import OptimizedImage from "@/components/OptimizedImage";
 import elegiaLogo from "@/assets/elegia-logo.png";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -62,7 +63,7 @@ const About = () => {
             <AnimatedSection animation="scale" className="mb-16 flex justify-center">
               <div className="relative group">
                 <div className="absolute -inset-4 bg-gradient-to-r from-primary/20 via-transparent to-primary/10 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                <img
+                <OptimizedImage
                   src={elegiaLogo}
                   alt="Elegia L.C."
                   className="relative w-full max-w-sm md:max-w-md drop-shadow-[0_0_60px_rgba(220,38,38,0.15)]"

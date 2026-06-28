@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import PageHeader from "@/components/PageHeader";
 import AnimatedSection from "@/components/AnimatedSection";
+import OptimizedImage from "@/components/OptimizedImage";
 
 interface ApiEvent {
   id: string;
@@ -108,7 +109,7 @@ const FeaturedEvents = () => {
                 <DialogTrigger asChild>
                   <Card className="group overflow-hidden bg-card/60 border-white/[0.06] backdrop-blur-xl cursor-pointer transition-all duration-500 hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(220,38,38,0.15)] hover:-translate-y-1 h-full">
                     <div className="aspect-[4/3] overflow-hidden relative">
-                      <img
+                      <OptimizedImage
                         src={event.image_url}
                         alt={event.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
@@ -166,7 +167,7 @@ const FeaturedEvents = () => {
                   </DialogHeader>
                   <DialogDescription asChild>
                     <div className="text-foreground/80 p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                      <img
+                      <OptimizedImage
                         src={event.image_url}
                         alt={event.title}
                         className="w-full h-72 object-cover rounded-lg border border-white/[0.06] mb-6"

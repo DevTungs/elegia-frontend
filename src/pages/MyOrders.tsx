@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import PageHeader from "@/components/PageHeader";
 import AnimatedSection from "@/components/AnimatedSection";
+import OptimizedImage from "@/components/OptimizedImage";
 import {
   Dialog,
   DialogContent,
@@ -297,7 +298,7 @@ export default function MyOrders() {
             </p>
             {selectedOrder?.pix_qr_code && (
               <div className="flex justify-center">
-                <img
+                <OptimizedImage
                   src={`data:image/png;base64,${selectedOrder.pix_qr_code}`}
                   alt="QR Code PIX"
                   className="w-56 h-56 bg-white p-2 rounded-lg"
