@@ -119,22 +119,31 @@ const formatEventDate = (dateString: string) => {
   });
 };
 
-export const normalizeBandsintownEvent = (event: BandsintownEvent): UnifiedEvent => {
-  const venue = event.venue;
-  const artist = event.artist;
+export const normalizeBandsintownEvent = (event: BandsintownEvent): UnifiedEvent | null => {
+  if (!event || typeof event !== "object") return null;
 
-  const locationParts = [venue.name, venue.city, venue.region, venue.country].filter(Boolean);
-  const location = locationParts.join(", ");
+  const venue = event.venue || ({} as BandsintownVenue);
+  const artist = event.artist || ({} as BandsintownArtist);
+  const offers = Array.isArray(event.offers) ? event.offers : [];
+  const lineup = Array.isArray(event.lineup) ? event.lineup : [];
 
-  const ticketOffer = event.offers.find((offer) => offer.type === "Tickets" || offer.url);
-  const ticketLink = ticketOffer?.url || `${event.url}&trigger=notify_me`;
+  const artistName = artist.name || "Elegia L.C";
+  const venueName = venue.name || "Local a definir";
+
+  const locationParts = [venueName, venue.city, venue.region, venue.country].filter(Boolean);
+  const location = locationParts.join(", ") || "Local a definir";
+
+  const ticketOffer = offers.find((offer) => offer?.type === "Tickets" || offer?.url);
+  const ticketLink = ticketOffer?.url || `${event.url || ""}&trigger=notify_me`;
   const hasTickets = Boolean(ticketOffer?.url);
 
-  const rawTitle = event.title?.trim() || `${artist.name} @ ${venue.name}`;
-  const title = rawTitle.startsWith(`${artist.name} @ `)
-    ? rawTitle.slice(`${artist.name} @ `.length).trim()
+  const rawTitle = event.title?.trim() || `${artistName} @ ${venueName}`;
+  const title = rawTitle.startsWith(`${artistName} @ `)
+    ? rawTitle.slice(`${artistName} @ `.length).trim()
     : rawTitle;
   const date = event.starts_at || event.datetime;
+
+  if (!date) return null;
 
   const formatEventTime = (dateString: string) => {
     const d = new Date(dateString);
@@ -150,22 +159,22 @@ export const normalizeBandsintownEvent = (event: BandsintownEvent): UnifiedEvent
         .replace(/#[A-Za-z0-9\u00C0-\u00FF_]+/g, "")
         .replace(/\n{3,}/g, "\n\n")
         .trim()
-    : `Show com ${event.lineup?.join(", ") || artist.name}.`;
+    : `Show com ${lineup.join(", ") || artistName}.`;
 
   return {
-    id: `bit-${event.id}`,
-    title,
+    id: `bit-${event.id || Math.random().toString(36).slice(2)}`,
+    title: title || "Evento",
     date,
     time: formatEventTime(date),
     formatted_date: formatEventDate(date),
     location,
     description: cleanDescription,
-    image_url: artist.image_url || artist.thumb_url,
+    image_url: artist.image_url || artist.thumb_url || "",
     ticket_link: ticketLink,
     source: "bandsintown",
     ticket_cta: hasTickets ? "Comprar Ingressos" : "Avise-me",
     bandsintown_url: event.url,
-    lineup: event.lineup?.length ? event.lineup : [artist.name],
+    lineup: lineup.length ? lineup : [artistName],
   };
 };
 
@@ -200,7 +209,9 @@ export const mergeEvents = (
   const safeBandsintownEvents = Array.isArray(bandsintownEvents) ? bandsintownEvents : [];
 
   const normalizedApi = safeApiEvents.map(normalizeApiEvent);
-  const normalizedBandsintown = safeBandsintownEvents.map(normalizeBandsintownEvent);
+  const normalizedBandsintown = safeBandsintownEvents
+    .map(normalizeBandsintownEvent)
+    .filter((event): event is UnifiedEvent => event !== null);
 
   const allEvents = [...normalizedApi, ...normalizedBandsintown];
 
