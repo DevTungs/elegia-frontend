@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { api } from "@/services/api";
+import { api, getToken } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -246,7 +246,7 @@ const Admin = () => {
       const formData = new FormData();
       formData.append("image", file);
 
-      const token = localStorage.getItem("elegia-token");
+      const token = getToken();
       const response = await fetch(`${import.meta.env.VITE_API_URL || "/api"}/upload`, {
         method: "POST",
         headers: {

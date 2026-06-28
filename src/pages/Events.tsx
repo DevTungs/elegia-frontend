@@ -119,12 +119,36 @@ const Events = () => {
                           <div className="space-y-2 text-sm text-foreground/70 mb-4 flex-1">
                             <div className="flex items-center gap-3">
                               <Calendar size={14} className="text-primary flex-shrink-0" />
-                              <span className="font-medium">{event.formatted_date}</span>
+                              <span className="font-medium">
+                                {event.formatted_date}
+                                {event.time && ` · ${event.time}`}
+                              </span>
                             </div>
                             <div className="flex items-center gap-3">
                               <MapPin size={14} className="text-primary flex-shrink-0" />
                               <span className="font-medium leading-tight">{event.location}</span>
                             </div>
+                            {event.lineup && event.lineup.length > 0 && (
+                              <div className="flex flex-wrap gap-1.5 pt-1">
+                                {event.lineup.slice(0, 3).map((artist) => (
+                                  <Badge
+                                    key={artist}
+                                    variant="secondary"
+                                    className="text-[10px] uppercase tracking-wider font-semibold bg-white/[0.04] text-foreground/70 hover:bg-white/[0.08]"
+                                  >
+                                    {artist}
+                                  </Badge>
+                                ))}
+                                {event.lineup.length > 3 && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-[10px] uppercase tracking-wider font-semibold bg-white/[0.04] text-foreground/70 hover:bg-white/[0.08]"
+                                  >
+                                    +{event.lineup.length - 3}
+                                  </Badge>
+                                )}
+                              </div>
+                            )}
                             <p className="pt-2 text-xs text-foreground/50 line-clamp-2">
                               {event.description}
                             </p>
@@ -154,10 +178,13 @@ const Events = () => {
                             className="w-full h-72 object-cover rounded-lg border border-white/[0.06] mb-6"
                           />
 
-                          <div className="flex flex-col sm:flex-row gap-4 mb-8 bg-secondary/50 p-4 rounded-lg border border-white/[0.04]">
+                          <div className="flex flex-col sm:flex-row gap-4 mb-6 bg-secondary/50 p-4 rounded-lg border border-white/[0.04]">
                             <div className="flex items-center gap-3">
                               <Calendar size={18} className="text-primary" />
-                              <span className="font-medium text-foreground">{event.formatted_date}</span>
+                              <span className="font-medium text-foreground">
+                                {event.formatted_date}
+                                {event.time && ` · ${event.time}`}
+                              </span>
                             </div>
                             <div className="flex items-center gap-3">
                               <MapPin size={18} className="text-primary" />
@@ -165,7 +192,26 @@ const Events = () => {
                             </div>
                           </div>
 
-                          <div className="text-foreground/80 whitespace-pre-wrap leading-relaxed mb-8">
+                          {event.lineup && event.lineup.length > 0 && (
+                            <div className="mb-6">
+                              <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-3">
+                                Line-up
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {event.lineup.map((artist) => (
+                                  <Badge
+                                    key={artist}
+                                    variant="outline"
+                                    className="text-xs font-semibold uppercase tracking-wider border-primary/20 text-primary hover:bg-primary/10"
+                                  >
+                                    {artist}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="text-foreground/80 whitespace-pre-wrap leading-relaxed mb-8 text-sm">
                             {event.description}
                           </div>
 

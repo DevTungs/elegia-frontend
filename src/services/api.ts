@@ -38,16 +38,40 @@ export const api = {
   delete: <T>(path: string) => fetchJson<T>(path, { method: "DELETE" }),
 };
 
+const safeLocalStorage = {
+  getItem(key: string): string | null {
+    try {
+      return localStorage.getItem(key);
+    } catch {
+      return null;
+    }
+  },
+  setItem(key: string, value: string) {
+    try {
+      localStorage.setItem(key, value);
+    } catch {
+      // ignore
+    }
+  },
+  removeItem(key: string) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // ignore
+    }
+  },
+};
+
 export function setToken(token: string) {
-  localStorage.setItem("elegia-token", token);
+  safeLocalStorage.setItem("elegia-token", token);
 }
 
 export function getToken(): string | null {
-  return localStorage.getItem("elegia-token");
+  return safeLocalStorage.getItem("elegia-token");
 }
 
 export function removeToken() {
-  localStorage.removeItem("elegia-token");
+  safeLocalStorage.removeItem("elegia-token");
 }
 
 export function getUser() {

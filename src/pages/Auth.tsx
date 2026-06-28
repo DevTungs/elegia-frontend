@@ -28,10 +28,14 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      const data = await api.post<{ token: string; user: { id: string; email: string; role: string } }>(
+      const data = await api.post<{ token?: string; user?: { id: string; email: string; role: string } }>(
         "/auth/login",
         { email, password }
       );
+
+      if (!data.token) {
+        throw new Error("Resposta da API não contém token. Verifique o endpoint.");
+      }
 
       setToken(data.token);
 
@@ -41,10 +45,11 @@ const Auth = () => {
       });
       navigate("/admin");
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: error instanceof Error ? error.message : "Erro ao fazer login",
+        title: "Erro ao fazer login",
+        description: error instanceof Error ? error.message : "Erro desconhecido. Verifique o console.",
       });
     } finally {
       setLoading(false);
