@@ -7,7 +7,6 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 
 const CartDrawer = () => {
   const { items, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice, isCartOpen, setIsCartOpen } = useCart();
@@ -24,7 +23,7 @@ const CartDrawer = () => {
 
   return (
     <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
-      <SheetContent className="w-full sm:max-w-md bg-card border-white/[0.06] p-0 flex flex-col h-full gap-0">
+      <SheetContent className="w-full sm:max-w-md bg-card border-white/[0.06] p-0 flex flex-col h-[100dvh] gap-0">
         <SheetHeader className="p-6 border-b border-white/[0.06] text-left">
           <div className="flex items-center gap-3">
             {showCheckout && (
@@ -50,7 +49,7 @@ const CartDrawer = () => {
           </div>
         </SheetHeader>
 
-        <ScrollArea className="flex-1 p-6 h-full min-h-0">
+        <div className="flex-1 min-h-0 overflow-y-auto p-6">
           {showCheckout ? (
             <CheckoutForm
               items={items}
@@ -141,7 +140,7 @@ const CartDrawer = () => {
               })}
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         {!showCheckout && items.length > 0 && (
           <div className="p-6 border-t border-white/[0.06] space-y-4">
