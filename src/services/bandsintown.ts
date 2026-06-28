@@ -88,7 +88,8 @@ export const fetchBandsintownEvents = async (
     throw new Error(`Bandsintown API error: ${response.status} ${response.statusText}`);
   }
 
-  return response.json();
+  const data = await response.json();
+  return Array.isArray(data) ? data : [];
 };
 
 export const fetchBandsintownArtist = async (): Promise<BandsintownArtist> => {
@@ -127,7 +128,10 @@ export const normalizeBandsintownEvent = (event: BandsintownEvent): UnifiedEvent
   const ticketLink = ticketOffer?.url || `${event.url}&trigger=notify_me`;
   const hasTickets = Boolean(ticketOffer?.url);
 
-  const title = event.title?.trim() || `${artist.name} @ ${venue.name}`;
+  const rawTitle = event.title?.trim() || `${artist.name} @ ${venue.name}`;
+  const title = rawTitle.startsWith(`${artist.name} @ `)
+    ? rawTitle.slice(`${artist.name} @ `.length).trim()
+    : rawTitle;
   const date = event.starts_at || event.datetime;
 
   return {
@@ -172,8 +176,11 @@ export const mergeEvents = (
   }[],
   bandsintownEvents: BandsintownEvent[]
 ): UnifiedEvent[] => {
-  const normalizedApi = apiEvents.map(normalizeApiEvent);
-  const normalizedBandsintown = bandsintownEvents.map(normalizeBandsintownEvent);
+  const safeApiEvents = Array.isArray(apiEvents) ? apiEvents : [];
+  const safeBandsintownEvents = Array.isArray(bandsintownEvents) ? bandsintownEvents : [];
+
+  const normalizedApi = safeApiEvents.map(normalizeApiEvent);
+  const normalizedBandsintown = safeBandsintownEvents.map(normalizeBandsintownEvent);
 
   const allEvents = [...normalizedApi, ...normalizedBandsintown];
 
