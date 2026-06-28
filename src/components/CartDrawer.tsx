@@ -49,7 +49,7 @@ const CartDrawer = () => {
           </div>
         </SheetHeader>
 
-        <div className="flex-1 min-h-0 overflow-y-auto p-6">
+        <div className="flex-1 min-h-0 overflow-y-auto p-6 scroll-p-2">
           {showCheckout ? (
             <CheckoutForm
               items={items}

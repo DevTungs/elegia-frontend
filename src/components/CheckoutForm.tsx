@@ -192,7 +192,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
           onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
           required
           placeholder="Seu nome"
-          className="bg-background border-white/[0.08] focus-visible:ring-0 focus-visible:ring-offset-0"
+          className="bg-background border-white/[0.08]"
         />
       </div>
 
@@ -206,7 +206,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
             onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
             required
             placeholder="seu@email.com"
-            className="bg-background border-white/[0.08] focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="bg-background border-white/[0.08]"
           />
         </div>
         <div className="space-y-2">
@@ -218,7 +218,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
             onChange={(e) => setCustomer({ ...customer, phone: formatPhone(e.target.value) })}
             placeholder="(00) 00000-0000"
             maxLength={15}
-            className="bg-background border-white/[0.08] focus-visible:ring-0 focus-visible:ring-offset-0"
+            className="bg-background border-white/[0.08]"
           />
         </div>
       </div>
@@ -232,7 +232,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
           required
           placeholder="000.000.000-00"
           maxLength={18}
-          className="bg-background border-white/[0.08] focus-visible:ring-0 focus-visible:ring-offset-0"
+          className="bg-background border-white/[0.08]"
         />
       </div>
 
@@ -254,7 +254,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
                 placeholder="00000-000"
                 maxLength={9}
                 disabled={isLoadingZipCode}
-                className="bg-background border-white/[0.08] focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="bg-background border-white/[0.08]"
               />
             </div>
             <div className="space-y-2">
@@ -266,7 +266,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
                 required
                 placeholder="SP"
                 maxLength={2}
-                className="bg-background border-white/[0.08] focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="bg-background border-white/[0.08]"
               />
             </div>
           </div>
@@ -279,7 +279,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
               onChange={(e) => updateAddress("street", e.target.value)}
               required
               placeholder="Nome da rua"
-              className="bg-background border-white/[0.08] focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="bg-background border-white/[0.08]"
             />
           </div>
 
@@ -292,7 +292,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
                 onChange={(e) => updateAddress("number", e.target.value)}
                 required
                 placeholder="123"
-                className="bg-background border-white/[0.08] focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="bg-background border-white/[0.08]"
               />
             </div>
             <div className="space-y-2">
@@ -302,7 +302,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
                 value={customer.address.complement}
                 onChange={(e) => updateAddress("complement", e.target.value)}
                 placeholder="Apto, bloco"
-                className="bg-background border-white/[0.08] focus-visible:ring-0 focus-visible:ring-offset-0"
+                className="bg-background border-white/[0.08]"
               />
             </div>
           </div>
@@ -315,7 +315,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
               onChange={(e) => updateAddress("neighborhood", e.target.value)}
               required
               placeholder="Bairro"
-              className="bg-background border-white/[0.08] focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="bg-background border-white/[0.08]"
             />
           </div>
 
@@ -327,7 +327,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
               onChange={(e) => updateAddress("city", e.target.value)}
               required
               placeholder="Cidade"
-              className="bg-background border-white/[0.08] focus-visible:ring-0 focus-visible:ring-offset-0"
+              className="bg-background border-white/[0.08]"
             />
           </div>
         </div>
