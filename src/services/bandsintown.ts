@@ -70,6 +70,7 @@ export interface UnifiedEvent {
   source: "api" | "bandsintown";
   ticket_cta: string;
   bandsintown_url?: string;
+  formatted_date: string;
 }
 
 export const fetchBandsintownEvents = async (
@@ -105,6 +106,16 @@ export const fetchBandsintownArtist = async (): Promise<BandsintownArtist> => {
   return response.json();
 };
 
+const formatEventDate = (dateString: string) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+};
+
 export const normalizeBandsintownEvent = (event: BandsintownEvent): UnifiedEvent => {
   const venue = event.venue;
   const artist = event.artist;
@@ -117,11 +128,13 @@ export const normalizeBandsintownEvent = (event: BandsintownEvent): UnifiedEvent
   const hasTickets = Boolean(ticketOffer?.url);
 
   const title = event.title?.trim() || `${artist.name} @ ${venue.name}`;
+  const date = event.starts_at || event.datetime;
 
   return {
     id: `bit-${event.id}`,
     title,
-    date: event.starts_at || event.datetime,
+    date,
+    formatted_date: formatEventDate(date),
     location,
     description: event.description || `Show com ${event.lineup?.join(", ") || artist.name}.`,
     image_url: artist.image_url || artist.thumb_url,
@@ -144,6 +157,7 @@ export const normalizeApiEvent = (event: {
   ...event,
   source: "api",
   ticket_cta: "Comprar Ingressos",
+  formatted_date: formatEventDate(event.date),
 });
 
 export const mergeEvents = (

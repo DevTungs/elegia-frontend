@@ -1,8 +1,13 @@
 import { useCart } from "@/hooks/useCart";
 import { CheckoutForm } from "@/components/CheckoutForm";
-import { X, Minus, Plus, ShoppingBag, Trash2, ArrowLeft, Package } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Trash2, ArrowLeft, Package } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const CartDrawer = () => {
   const { items, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice, isCartOpen, setIsCartOpen } = useCart();
@@ -17,46 +22,35 @@ const CartDrawer = () => {
   const formatPrice = (price: number) =>
     price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-  if (!isCartOpen) return null;
-
   return (
-    <>
-      <div
-        className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] transition-opacity"
-        onClick={() => setIsCartOpen(false)}
-      />
-
-      <div className="fixed right-0 top-0 bottom-0 w-full max-w-md bg-card border-l border-white/[0.06] z-[70] flex flex-col aggressive-shadow">
-        <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
+    <Sheet open={isCartOpen} onOpenChange={setIsCartOpen}>
+      <SheetContent className="w-full sm:max-w-md bg-card border-white/[0.06] p-0 flex flex-col">
+        <SheetHeader className="p-6 border-b border-white/[0.06] text-left">
           <div className="flex items-center gap-3">
             {showCheckout && (
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={() => setShowCheckout(false)}
-                className="p-1 hover:bg-white/5 rounded-md transition-colors"
+                className="h-8 w-8"
                 aria-label="Voltar"
               >
-                <ArrowLeft size={20} />
-              </button>
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
             )}
-            <ShoppingBag size={22} className="text-primary" />
-            <h2 className="text-2xl tracking-wide">
+            <ShoppingBag className="h-5 w-5 text-primary" />
+            <SheetTitle className="text-2xl tracking-wide">
               {showCheckout ? "Checkout" : "Carrinho"}
-            </h2>
-            {!showCheckout && (
-              <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-bold">
+            </SheetTitle>
+            {!showCheckout && totalItems > 0 && (
+              <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/10">
                 {totalItems}
-              </span>
+              </Badge>
             )}
           </div>
-          <button
-            onClick={() => setIsCartOpen(false)}
-            className="p-2 hover:bg-white/5 rounded-md transition-colors"
-          >
-            <X size={20} />
-          </button>
-        </div>
+        </SheetHeader>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+        <ScrollArea className="flex-1 p-6">
           {showCheckout ? (
             <CheckoutForm
               items={items}
@@ -69,8 +63,8 @@ const CartDrawer = () => {
               onCancel={() => setShowCheckout(false)}
             />
           ) : items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <ShoppingBag size={48} className="text-muted-foreground/30 mb-4" />
+            <div className="flex flex-col items-center justify-center h-full text-center min-h-[300px]">
+              <ShoppingBag className="h-12 w-12 text-muted-foreground/30 mb-4" />
               <p className="text-muted-foreground text-lg mb-2">Carrinho vazio</p>
               <p className="text-muted-foreground/60 text-sm">
                 Adicione produtos para continuar
@@ -83,9 +77,9 @@ const CartDrawer = () => {
                 return (
                   <div
                     key={key}
-                    className="flex gap-4 p-4 section-frame rounded-lg group"
+                    className="flex gap-4 p-4 surface-elevated group"
                   >
-                    <div className="w-20 h-20 bg-secondary rounded-md flex-shrink-0 overflow-hidden">
+                    <div className="w-20 h-20 bg-secondary rounded-lg flex-shrink-0 overflow-hidden">
                       <img
                         src={item.product.image_url}
                         alt={item.product.name}
@@ -115,25 +109,31 @@ const CartDrawer = () => {
                       </p>
 
                       <div className="flex items-center gap-2 mt-2">
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
                           onClick={() => updateQuantity(item.product.id, item.quantity - 1, item.selectedSize, item.selectedColor)}
-                          className="p-1 hover:bg-white/10 rounded transition-colors"
                         >
-                          <Minus size={14} />
-                        </button>
+                          <Minus className="h-4 w-4" />
+                        </Button>
                         <span className="text-sm font-bold w-6 text-center">{item.quantity}</span>
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7"
                           onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedSize, item.selectedColor)}
-                          className="p-1 hover:bg-white/10 rounded transition-colors"
                         >
-                          <Plus size={14} />
-                        </button>
-                        <button
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 ml-auto text-muted-foreground hover:text-destructive"
                           onClick={() => removeFromCart(item.product.id, item.selectedSize, item.selectedColor)}
-                          className="ml-auto p-1 text-muted-foreground hover:text-destructive transition-colors"
                         >
-                          <Trash2 size={14} />
-                        </button>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -141,49 +141,56 @@ const CartDrawer = () => {
               })}
             </div>
           )}
-        </div>
+        </ScrollArea>
 
         {!showCheckout && items.length > 0 && (
           <div className="p-6 border-t border-white/[0.06] space-y-4">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span>{formatPrice(totalPrice)}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-muted-foreground">Frete</span>
-              <span>{formatPrice(shipping)}</span>
-            </div>
-            <div className="flex justify-between items-center pt-2 border-t border-white/[0.06]">
-              <span className="font-bold">Total</span>
-              <span className="text-xl font-bold text-primary">{formatPrice(total)}</span>
+            <div className="space-y-2">
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Subtotal</span>
+                <span>{formatPrice(totalPrice)}</span>
+              </div>
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-muted-foreground">Frete</span>
+                <span>{formatPrice(shipping)}</span>
+              </div>
+              <Separator className="bg-white/[0.06]" />
+              <div className="flex justify-between items-center">
+                <span className="font-bold">Total</span>
+                <span className="text-xl font-bold text-primary">{formatPrice(total)}</span>
+              </div>
             </div>
 
-            <button
+            <Button
               onClick={() => setShowCheckout(true)}
-              className="w-full py-4 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 transition-all rounded-md"
+              className="w-full h-12 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 rounded-md"
             >
               Finalizar Compra
-            </button>
+            </Button>
 
-            <Link
-              to="/meus-pedidos"
+            <Button
+              variant="ghost"
+              asChild
+              className="w-full text-muted-foreground hover:text-foreground"
               onClick={() => setIsCartOpen(false)}
-              className="w-full py-3 flex items-center justify-center gap-2 text-muted-foreground text-sm hover:text-foreground transition-colors"
             >
-              <Package size={16} />
-              Meus Pedidos
-            </Link>
+              <Link to="/meus-pedidos" className="flex items-center justify-center gap-2">
+                <Package className="h-4 w-4" />
+                Meus Pedidos
+              </Link>
+            </Button>
 
-            <button
+            <Button
+              variant="ghost"
               onClick={clearCart}
-              className="w-full py-3 text-muted-foreground text-sm hover:text-destructive transition-colors"
+              className="w-full text-muted-foreground hover:text-destructive"
             >
               Limpar carrinho
-            </button>
+            </Button>
           </div>
         )}
-      </div>
-    </>
+      </SheetContent>
+    </Sheet>
   );
 };
 

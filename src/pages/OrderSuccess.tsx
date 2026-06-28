@@ -2,8 +2,12 @@ import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { api } from "@/services/api";
 import { type Order } from "@/types/merch";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import PageShell from "@/components/PageShell";
+import AnimatedSection from "@/components/AnimatedSection";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { CheckCircle, Copy, Loader2, AlertCircle, ExternalLink, MapPin, Truck } from "lucide-react";
 import { toast } from "sonner";
 
@@ -71,37 +75,34 @@ const OrderSuccess = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <main className="flex-1 pt-28 pb-24 flex items-center justify-center">
-          <Loader2 size={40} className="animate-spin text-primary" />
-        </main>
-        <Footer />
-      </div>
+      <PageShell>
+        <div className="flex-1 flex items-center justify-center pt-28 pb-24">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+        </div>
+      </PageShell>
     );
   }
 
   if (!orderId || !order) {
     return (
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <main className="flex-1 pt-28 pb-24 flex items-center justify-center">
-          <div className="text-center">
-            <AlertCircle size={48} className="text-destructive mx-auto mb-4" />
-            <h1 className="text-2xl font-bold mb-2">Pedido não encontrado</h1>
-            <p className="text-muted-foreground mb-6">
-              Não conseguimos localizar os dados do seu pedido.
-            </p>
-            <Link
-              to="/merch"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-bold uppercase tracking-widest rounded-md hover:bg-primary/90 transition-all"
-            >
-              Voltar à loja
-            </Link>
-          </div>
-        </main>
-        <Footer />
-      </div>
+      <PageShell>
+        <div className="flex-1 flex items-center justify-center pt-28 pb-24 px-4">
+          <AnimatedSection animation="scale">
+            <Card className="surface-elevated border-white/[0.08] max-w-md text-center p-8">
+              <CardContent className="p-0 space-y-5">
+                <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
+                <h1 className="text-2xl font-bold">Pedido não encontrado</h1>
+                <p className="text-muted-foreground">
+                  Não conseguimos localizar os dados do seu pedido.
+                </p>
+                <Button asChild className="bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 rounded-md">
+                  <Link to="/merch">Voltar à loja</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </AnimatedSection>
+        </div>
+      </PageShell>
     );
   }
 
@@ -109,178 +110,174 @@ const OrderSuccess = () => {
   const isPaid = order.status === "received" || order.status === "confirmed";
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-
-      <main className="flex-1 pt-28 pb-24">
+    <PageShell>
+      <section className="pt-28 pb-24">
         <div className="container mx-auto px-4 max-w-2xl">
-          <div className="text-center mb-10">
-            <CheckCircle size={64} className="text-primary mx-auto mb-4" />
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Pedido Recebido</h1>
-            <p className="text-muted-foreground">
-              Obrigado pelo apoio! Seu pedido foi registrado com sucesso.
-            </p>
-          </div>
-
-          <div className="section-frame rounded-lg p-6 md:p-8 space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/[0.06]">
-              <div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
-                  Número do pedido
-                </p>
-                <p className="text-lg font-mono">{order.id.slice(0, 8).toUpperCase()}</p>
-              </div>
-              <div className="text-left md:text-right">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
-                  Status
-                </p>
-                <span
-                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                    isPaid
-                      ? "bg-green-500/20 text-green-500"
-                      : "bg-yellow-500/20 text-yellow-500"
-                  }`}
-                >
-                  {isPaid ? "Pago" : "Aguardando pagamento"}
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
-                Resumo
+          <AnimatedSection animation="fade-up">
+            <div className="text-center mb-10">
+              <CheckCircle className="h-16 w-16 text-primary mx-auto mb-4" />
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">Pedido Recebido</h1>
+              <p className="text-muted-foreground">
+                Obrigado pelo apoio! Seu pedido foi registrado com sucesso.
               </p>
-              {Array.isArray(order.items) &&
-                order.items.map((item: OrderItem, index: number) => (
-                  <div key={index} className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      {item.quantity}x {item.product.name}
-                      {item.selectedSize ? ` - ${item.selectedSize}` : ""}
-                    </span>
-                    <span className="font-medium">
-                      {formatPrice(item.product.price * item.quantity)}
-                    </span>
-                  </div>
-                ))}
-
-              <div className="flex justify-between text-sm pt-3 border-t border-white/[0.06]">
-                <span className="text-muted-foreground">Subtotal</span>
-                <span className="font-medium">{formatPrice(order.subtotal)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Frete</span>
-                <span className="font-medium">{formatPrice(order.shipping_cost)}</span>
-              </div>
-              <div className="flex justify-between items-center pt-3 border-t border-white/[0.06]">
-                <span className="font-bold">Total</span>
-                <span className="text-xl font-bold text-primary">{formatPrice(order.total)}</span>
-              </div>
             </div>
+          </AnimatedSection>
 
-            <div className="space-y-3 pt-4 border-t border-white/[0.06]">
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-2">
-                <MapPin size={14} />
-                Endereço de entrega
-              </p>
-              <div className="text-sm text-muted-foreground space-y-1">
-                <p className="text-foreground font-medium">
-                  {order.shipping_street}, {order.shipping_number}
-                  {order.shipping_complement ? ` - ${order.shipping_complement}` : ""}
-                </p>
-                <p>{order.shipping_neighborhood}</p>
-                <p>
-                  {order.shipping_city} - {order.shipping_state}
-                </p>
-                <p>CEP: {order.shipping_zip_code}</p>
-              </div>
-            </div>
-
-            {order.tracking_code && (
-              <div className="space-y-2 pt-4 border-t border-white/[0.06]">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-2">
-                  <Truck size={14} />
-                  Envio
-                </p>
-                <p className="text-sm">
-                  Código de rastreio:{" "}
-                  <span className="font-mono text-primary">{order.tracking_code}</span>
-                </p>
-                {order.shipped_at && (
-                  <p className="text-xs text-muted-foreground">
-                    Enviado em {new Date(order.shipped_at).toLocaleDateString("pt-BR")}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {isPix && pixData?.pixPayload && !isPaid && (
-              <div className="space-y-4 pt-4 border-t border-white/[0.06]">
-                <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
-                  Pague com PIX
-                </p>
-
-                {pixData.pixQrCode && (
-                  <div className="flex justify-center">
-                    <img
-                      src={`data:image/png;base64,${pixData.pixQrCode}`}
-                      alt="QR Code PIX"
-                      className="w-48 h-48 bg-white p-2 rounded-lg"
-                    />
+          <AnimatedSection animation="scale" delay={2}>
+            <Card className="surface-elevated border-white/[0.08]">
+              <CardContent className="p-6 md:p-8 space-y-6">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-white/[0.06]">
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
+                      Número do pedido
+                    </p>
+                    <p className="text-lg font-mono">{order.id.slice(0, 8).toUpperCase()}</p>
                   </div>
-                )}
-
-                <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">Copie e cole no app do seu banco:</p>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      readOnly
-                      value={pixData.pixPayload}
-                      className="flex-1 bg-secondary border border-white/10 rounded-md px-3 py-2 text-xs text-muted-foreground truncate"
-                    />
-                    <button
-                      onClick={handleCopyPix}
-                      className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-all"
-                      aria-label="Copiar código PIX"
-                    >
-                      <Copy size={16} />
-                    </button>
+                  <div className="text-left md:text-right">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
+                      Status
+                    </p>
+                    <Badge variant={isPaid ? "default" : "outline"} className={isPaid ? "bg-green-500/20 text-green-500 hover:bg-green-500/20 hover:text-green-500" : "text-yellow-500 border-yellow-500/20 bg-yellow-500/10"}>
+                      {isPaid ? "Pago" : "Aguardando pagamento"}
+                    </Badge>
                   </div>
                 </div>
-              </div>
-            )}
 
-            {!isPaid && order.payment_url && (
-              <div className="pt-4 border-t border-white/[0.06]">
-                <a
-                  href={order.payment_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3 bg-secondary text-foreground font-bold uppercase tracking-widest rounded-md hover:bg-secondary/80 transition-all flex items-center justify-center gap-2"
-                >
-                  <ExternalLink size={16} />
-                  Ver no Asaas
-                </a>
-              </div>
-            )}
+                <div className="space-y-3">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
+                    Resumo
+                  </p>
+                  {Array.isArray(order.items) &&
+                    order.items.map((item: OrderItem, index: number) => (
+                      <div key={index} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          {item.quantity}x {item.product.name}
+                          {item.selectedSize ? ` - ${item.selectedSize}` : ""}
+                        </span>
+                        <span className="font-medium">
+                          {formatPrice(item.product.price * item.quantity)}
+                        </span>
+                      </div>
+                    ))}
 
-            <div className="pt-4 border-t border-white/[0.06] text-center">
-              <p className="text-sm text-muted-foreground mb-4">
-                Você receberá atualizações por e-mail sobre o status do pedido.
-              </p>
-              <Link
-                to="/merch"
-                className="inline-flex items-center gap-2 text-primary font-bold uppercase tracking-widest text-sm hover:underline"
-              >
-                Continuar comprando
-              </Link>
-            </div>
-          </div>
+                  <Separator className="bg-white/[0.06]" />
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="font-medium">{formatPrice(order.subtotal)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Frete</span>
+                    <span className="font-medium">{formatPrice(order.shipping_cost)}</span>
+                  </div>
+                  <Separator className="bg-white/[0.06]" />
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold">Total</span>
+                    <span className="text-xl font-bold text-primary">{formatPrice(order.total)}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3 pt-4 border-t border-white/[0.06]">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Endereço de entrega
+                  </p>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <p className="text-foreground font-medium">
+                      {order.shipping_street}, {order.shipping_number}
+                      {order.shipping_complement ? ` - ${order.shipping_complement}` : ""}
+                    </p>
+                    <p>{order.shipping_neighborhood}</p>
+                    <p>
+                      {order.shipping_city} - {order.shipping_state}
+                    </p>
+                    <p>CEP: {order.shipping_zip_code}</p>
+                  </div>
+                </div>
+
+                {order.tracking_code && (
+                  <div className="space-y-2 pt-4 border-t border-white/[0.06]">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-2">
+                      <Truck className="h-4 w-4" />
+                      Envio
+                    </p>
+                    <p className="text-sm">
+                      Código de rastreio:{" "}
+                      <span className="font-mono text-primary">{order.tracking_code}</span>
+                    </p>
+                    {order.shipped_at && (
+                      <p className="text-xs text-muted-foreground">
+                        Enviado em {new Date(order.shipped_at).toLocaleDateString("pt-BR")}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {isPix && pixData?.pixPayload && !isPaid && (
+                  <div className="space-y-4 pt-4 border-t border-white/[0.06]">
+                    <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
+                      Pague com PIX
+                    </p>
+
+                    {pixData.pixQrCode && (
+                      <div className="flex justify-center">
+                        <img
+                          src={`data:image/png;base64,${pixData.pixQrCode}`}
+                          alt="QR Code PIX"
+                          className="w-48 h-48 bg-white p-2 rounded-lg"
+                        />
+                      </div>
+                    )}
+
+                    <div className="space-y-2">
+                      <p className="text-sm text-muted-foreground">Copie e cole no app do seu banco:</p>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          readOnly
+                          value={pixData.pixPayload}
+                          className="flex-1 bg-secondary border border-white/10 rounded-md px-3 py-2 text-xs text-muted-foreground truncate"
+                        />
+                        <Button
+                          onClick={handleCopyPix}
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md"
+                          aria-label="Copiar código PIX"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {!isPaid && order.payment_url && (
+                  <div className="pt-4 border-t border-white/[0.06]">
+                    <Button
+                      asChild
+                      variant="secondary"
+                      className="w-full h-11 font-bold uppercase tracking-widest rounded-md"
+                    >
+                      <a href={order.payment_url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Ver no Asaas
+                      </a>
+                    </Button>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t border-white/[0.06] text-center">
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Você receberá atualizações por e-mail sobre o status do pedido.
+                  </p>
+                  <Button variant="link" asChild className="text-primary font-bold uppercase tracking-widest">
+                    <Link to="/merch">Continuar comprando</Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </AnimatedSection>
         </div>
-      </main>
-
-      <Footer />
-    </div>
+      </section>
+    </PageShell>
   );
 };
 

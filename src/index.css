@@ -191,6 +191,35 @@
       0 20px 60px -10px rgba(0, 0, 0, 0.7),
       0 0 40px rgba(220, 38, 38, 0.1);
   }
+
+  /* Modern design system utilities */
+  .surface-elevated {
+    @apply bg-card border border-white/[0.06] rounded-xl;
+    box-shadow: 0 20px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+  }
+
+  .surface-glass {
+    @apply bg-background/80 backdrop-blur-xl border-b border-white/[0.04];
+  }
+
+  .focus-ring {
+    @apply ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+  }
+
+  .page-gradient {
+    background:
+      radial-gradient(ellipse at top left, hsl(0 72% 51% / 0.07), transparent 45%),
+      radial-gradient(ellipse at bottom right, hsl(0 72% 51% / 0.04), transparent 40%),
+      hsl(0 0% 3%);
+    background-attachment: fixed;
+  }
+
+  .glow-orb {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(120px);
+    pointer-events: none;
+  }
 }
 
 @keyframes fade-up {
@@ -229,4 +258,25 @@
   80% {
     transform: translate(2px, -2px);
   }
+}
+
+/* Scroll animation utilities */
+.animation-delay-100 {
+  transition-delay: 100ms;
+}
+
+.animation-delay-200 {
+  transition-delay: 200ms;
+}
+
+.animation-delay-300 {
+  transition-delay: 300ms;
+}
+
+.animation-delay-400 {
+  transition-delay: 400ms;
+}
+
+.animation-delay-500 {
+  transition-delay: 500ms;
 }

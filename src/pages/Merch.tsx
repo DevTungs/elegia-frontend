@@ -2,10 +2,24 @@ import { useState, useEffect } from "react";
 import { api } from "@/services/api";
 import { type Product, type ProductColor, CATEGORY_LABELS } from "@/types/merch";
 import { useCart } from "@/hooks/useCart";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
-import { ShoppingBag, X, Filter, Tag, Star, Truck } from "lucide-react";
+import PageShell from "@/components/PageShell";
+import PageHeader from "@/components/PageHeader";
+import AnimatedSection from "@/components/AnimatedSection";
+import { ShoppingBag, Star, Truck, Minus, Plus, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const Merch = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -74,312 +88,314 @@ const Merch = () => {
   const formatPrice = (price: number) =>
     price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col">
-        <Navigation />
-        <main className="flex-1 pt-28 pb-24 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-
-      <main className="flex-1 pt-28 pb-24 relative overflow-hidden noise-bg">
+    <PageShell>
+      <section className="pt-28 pb-24 relative overflow-hidden noise-bg">
         <div className="absolute top-0 left-0 w-full h-[600px] bg-gradient-to-b from-primary/[0.06] via-transparent to-transparent pointer-events-none" />
-        <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/[0.04] rounded-full blur-[150px] pointer-events-none" />
+        <div className="glow-orb top-20 right-0 w-[500px] h-[500px] bg-primary/[0.04]" />
 
         <div className="container relative z-10 mx-auto px-4">
-          <div className="text-center mb-16">
-            <span className="text-primary font-bold tracking-[0.3em] uppercase text-xs mb-4 block">
-              Loja Oficial
-            </span>
-            <h1 className="text-6xl md:text-8xl lg:text-9xl mb-6 tracking-wider">
-              MERCH
-            </h1>
-            <div className="h-0.5 w-24 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto opacity-60" />
-            <p className="mt-6 text-muted-foreground text-lg max-w-xl mx-auto">
-              This Is Our Elegy.
-            </p>
-          </div>
+          <AnimatedSection animation="fade-up">
+            <PageHeader
+              eyebrow="Loja Oficial"
+              title="Merch"
+              description="This Is Our Elegy."
+            />
+          </AnimatedSection>
 
-          {featuredProducts.length > 0 && (
-            <section className="mb-20">
-              <div className="flex items-center gap-3 mb-8">
-                <Tag size={18} className="text-primary" />
-                <h2 className="text-3xl tracking-wide">Destaques</h2>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {featuredProducts.slice(0, 2).map((product) => (
-                  <button
-                    key={product.id}
-                    onClick={() => handleProductClick(product)}
-                    className="group relative overflow-hidden section-frame rounded-lg text-left lift-hover"
-                  >
-                    <div className="flex flex-col sm:flex-row">
-                      <div className="sm:w-48 h-48 sm:h-auto bg-secondary flex-shrink-0 overflow-hidden">
-                        <img
-                          src={getPrimaryImage(product)}
-                          alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                        />
-                      </div>
-                      <div className="p-6 flex flex-col justify-center">
-                        <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-2">
-                          {CATEGORY_LABELS[product.category]}
-                        </span>
-                        <h3 className="text-2xl mb-2 group-hover:text-primary transition-colors">
-                          {product.name}
-                        </h3>
-                        <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
-                          {product.description}
-                        </p>
-                        <p className="text-xl font-bold text-primary">{formatPrice(product.price)}</p>
-                      </div>
-                    </div>
-                    <div className="absolute top-4 right-4">
-                      <span className="bg-primary text-primary-foreground text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full flex items-center gap-1">
-                        <Star size={10} className="fill-current" />
-                        Destaque
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <section>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10">
-              <h2 className="text-3xl tracking-wide">Todos os Produtos</h2>
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
-                <Filter size={16} className="text-muted-foreground flex-shrink-0" />
-                {categories.map((cat) => (
-                  <button
-                    key={cat.value}
-                    onClick={() => setSelectedCategory(cat.value)}
-                    className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-md whitespace-nowrap transition-all ${
-                      selectedCategory === cat.value
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {cat.label}
-                  </button>
+          {loading ? (
+            <div className="space-y-8">
+              <Skeleton className="h-10 w-72 bg-white/[0.03]" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <Skeleton key={i} className="h-[420px] rounded-xl bg-white/[0.03]" />
                 ))}
               </div>
             </div>
-
-            {filteredProducts.length === 0 ? (
-              <div className="text-center py-20">
-                <ShoppingBag size={48} className="text-muted-foreground/30 mx-auto mb-4" />
-                <p className="text-muted-foreground">Nenhum produto encontrado nesta categoria.</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((product) => (
-                  <button
-                    key={product.id}
-                    onClick={() => handleProductClick(product)}
-                    className="group section-frame rounded-lg overflow-hidden text-left lift-hover"
-                  >
-                    <div className="aspect-square bg-secondary overflow-hidden relative">
-                      <img
-                        src={getPrimaryImage(product)}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <span className="w-full py-3 bg-primary text-primary-foreground text-xs font-bold uppercase tracking-widest rounded-md flex items-center justify-center gap-2">
-                          <ShoppingBag size={14} />
-                          Ver Detalhes
-                        </span>
-                      </div>
-                      {product.stock < 20 && (
-                        <div className="absolute top-3 left-3">
-                          <span className="bg-destructive/90 text-white text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full">
-                            Últimas unidades
-                          </span>
-                        </div>
-                      )}
-                      {product.featured && (
-                        <div className="absolute top-3 right-3">
-                          <Star size={16} className="text-primary fill-primary" />
-                        </div>
-                      )}
+          ) : (
+            <>
+              {featuredProducts.length > 0 && (
+                <section className="mb-16">
+                  <AnimatedSection animation="fade-up">
+                    <div className="flex items-center gap-3 mb-6">
+                      <Sparkles className="h-5 w-5 text-primary" />
+                      <h2 className="text-2xl md:text-3xl tracking-wide">Destaques</h2>
                     </div>
-                    <div className="p-5">
-                      <span className="text-[10px] uppercase tracking-[0.2em] text-primary/70 font-bold">
-                        {CATEGORY_LABELS[product.category]}
-                      </span>
-                      <h3 className="text-lg mt-1 mb-2 group-hover:text-primary transition-colors">
-                        {product.name}
-                      </h3>
-                      <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
-                        {product.description}
-                      </p>
-                      <p className="text-lg font-bold text-primary">{formatPrice(product.price)}</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
-      </main>
+                  </AnimatedSection>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {featuredProducts.slice(0, 2).map((product, index) => (
+                      <AnimatedSection key={product.id} animation="fade-up" delay={((index + 1) as 1 | 2)}>
+                        <Card
+                          onClick={() => handleProductClick(product)}
+                          className="group overflow-hidden surface-elevated cursor-pointer transition-all duration-500 hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(220,38,38,0.15)] hover:-translate-y-1"
+                        >
+                          <div className="flex flex-col sm:flex-row">
+                            <div className="sm:w-48 h-52 sm:h-auto bg-secondary flex-shrink-0 overflow-hidden">
+                              <img
+                                src={getPrimaryImage(product)}
+                                alt={product.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                              />
+                            </div>
+                            <CardContent className="p-6 flex flex-col justify-center flex-1">
+                              <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-2">
+                                {CATEGORY_LABELS[product.category]}
+                              </span>
+                              <h3 className="text-xl md:text-2xl mb-2 group-hover:text-primary transition-colors">
+                                {product.name}
+                              </h3>
+                              <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                                {product.description}
+                              </p>
+                              <p className="text-xl font-bold text-primary">{formatPrice(product.price)}</p>
+                            </CardContent>
+                          </div>
+                          <div className="absolute top-4 right-4">
+                            <Badge className="bg-primary text-primary-foreground hover:bg-primary text-[10px]">
+                              <Star className="h-3 w-3 fill-current mr-1" />
+                              Destaque
+                            </Badge>
+                          </div>
+                        </Card>
+                      </AnimatedSection>
+                    ))}
+                  </div>
+                </section>
+              )}
 
-      {selectedProduct && (
-        <>
-          <div
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60]"
-            onClick={() => setSelectedProduct(null)}
-          />
-          <div className="fixed inset-4 md:inset-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-3xl md:w-full md:max-h-[85vh] bg-card border border-white/[0.08] rounded-lg z-[70] overflow-y-auto custom-scrollbar aggressive-shadow">
-            <button
-              onClick={() => setSelectedProduct(null)}
-              className="absolute top-4 right-4 p-2 hover:bg-white/10 rounded-md transition-colors z-10"
-            >
-              <X size={20} />
-            </button>
+              <section>
+                <AnimatedSection animation="fade-up">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                    <h2 className="text-2xl md:text-3xl tracking-wide">Todos os Produtos</h2>
+                    <Tabs value={selectedCategory} onValueChange={setSelectedCategory} className="w-full sm:w-auto">
+                      <TabsList className="bg-secondary/50 border border-white/[0.06] h-auto flex-wrap justify-start">
+                        {categories.map((cat) => (
+                          <TabsTrigger
+                            key={cat.value}
+                            value={cat.value}
+                            className="text-xs font-bold uppercase tracking-wider data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                          >
+                            {cat.label}
+                          </TabsTrigger>
+                        ))}
+                      </TabsList>
+                    </Tabs>
+                  </div>
+                </AnimatedSection>
 
-            <div className="grid md:grid-cols-2 gap-0">
-              <div>
-                <div className="aspect-square bg-secondary overflow-hidden">
-                  <img
-                    src={getProductImages(selectedProduct)[selectedImageIndex]?.url || selectedProduct.image_url}
-                    alt={selectedProduct.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                {getProductImages(selectedProduct).length > 1 && (
-                  <div className="flex gap-2 p-3 border-t border-white/[0.08]">
-                    {getProductImages(selectedProduct).map((img, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setSelectedImageIndex(index)}
-                        className={`w-14 h-14 rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
-                          selectedImageIndex === index
-                            ? "border-primary"
-                            : "border-transparent hover:border-white/20"
-                        }`}
+                {filteredProducts.length === 0 ? (
+                  <AnimatedSection animation="scale">
+                    <Card className="bg-card/50 border-white/[0.06]">
+                      <CardContent className="p-16 text-center">
+                        <ShoppingBag className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                        <p className="text-muted-foreground">Nenhum produto encontrado nesta categoria.</p>
+                      </CardContent>
+                    </Card>
+                  </AnimatedSection>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredProducts.map((product, index) => (
+                      <AnimatedSection
+                        key={product.id}
+                        animation="fade-up"
+                        delay={((index % 3) + 1) as 1 | 2 | 3}
                       >
-                        <img src={img.url} alt="" className="w-full h-full object-cover" />
-                      </button>
+                        <Card
+                          onClick={() => handleProductClick(product)}
+                          className="group overflow-hidden surface-elevated cursor-pointer transition-all duration-500 hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(220,38,38,0.15)] hover:-translate-y-1"
+                        >
+                          <div className="aspect-square bg-secondary overflow-hidden relative">
+                            <img
+                              src={getPrimaryImage(product)}
+                              alt={product.name}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
+                              <Button className="w-full bg-primary text-primary-foreground text-xs font-bold uppercase tracking-widest rounded-md">
+                                <ShoppingBag className="h-4 w-4 mr-2" />
+                                Ver Detalhes
+                              </Button>
+                            </div>
+                            {product.stock < 20 && (
+                              <div className="absolute top-3 left-3">
+                                <Badge variant="destructive" className="text-[10px]">
+                                  Últimas unidades
+                                </Badge>
+                              </div>
+                            )}
+                            {product.featured && (
+                              <div className="absolute top-3 right-3">
+                                <Star className="h-4 w-4 text-primary fill-primary" />
+                              </div>
+                            )}
+                          </div>
+                          <CardContent className="p-5">
+                            <span className="text-[10px] uppercase tracking-[0.2em] text-primary/70 font-bold">
+                              {CATEGORY_LABELS[product.category]}
+                            </span>
+                            <h3 className="text-lg mt-1 mb-2 group-hover:text-primary transition-colors">
+                              {product.name}
+                            </h3>
+                            <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
+                              {product.description}
+                            </p>
+                            <p className="text-lg font-bold text-primary">{formatPrice(product.price)}</p>
+                          </CardContent>
+                        </Card>
+                      </AnimatedSection>
                     ))}
                   </div>
                 )}
-              </div>
+              </section>
+            </>
+          )}
+        </div>
+      </section>
 
-              <div className="p-8 flex flex-col">
-                <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-2">
-                  {CATEGORY_LABELS[selectedProduct.category]}
-                </span>
-                <h2 className="text-3xl mb-3">{selectedProduct.name}</h2>
-                <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
-                  {selectedProduct.description}
-                </p>
-                <p className="text-2xl font-bold text-primary mb-6">
-                  {formatPrice(selectedProduct.price)}
-                </p>
-                {(selectedProduct.shipping_cost ?? 0) > 0 && (
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
-                    <Truck size={14} />
-                    <span>Frete: {formatPrice(selectedProduct.shipping_cost ?? 0)}</span>
-                  </div>
-                )}
-
-                {selectedProduct.colors && selectedProduct.colors.length > 0 && (
-                  <div className="mb-5">
-                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2 block">
-                      Cor
-                    </label>
-                    <div className="flex gap-2">
-                      {(selectedProduct.colors as ProductColor[]).map((color) => (
-                        <button
-                          key={color.name}
-                          onClick={() => setSelectedColor(color)}
-                          className={`w-10 h-10 rounded-md border-2 transition-all ${
-                            selectedColor?.name === color.name
-                              ? "border-primary scale-110"
-                              : "border-white/10 hover:border-white/30"
-                          }`}
-                          style={{ backgroundColor: color.hex }}
-                          title={color.name}
-                        />
-                      ))}
+      <Dialog open={!!selectedProduct} onOpenChange={() => setSelectedProduct(null)}>
+        <DialogContent className="max-w-4xl bg-card/95 border-white/[0.08] backdrop-blur-2xl p-0 overflow-hidden">
+          {selectedProduct && (
+            <>
+              <DialogHeader className="sr-only">
+                <DialogTitle>{selectedProduct.name}</DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="max-h-[85vh]">
+                <div className="grid md:grid-cols-2 gap-0">
+                  <div>
+                    <div className="aspect-square bg-secondary overflow-hidden">
+                      <img
+                        src={getProductImages(selectedProduct)[selectedImageIndex]?.url || selectedProduct.image_url}
+                        alt={selectedProduct.name}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
+                    {getProductImages(selectedProduct).length > 1 && (
+                      <div className="flex gap-2 p-3 border-t border-white/[0.08]">
+                        {getProductImages(selectedProduct).map((img, index) => (
+                          <button
+                            key={index}
+                            onClick={() => setSelectedImageIndex(index)}
+                            className={`w-14 h-14 rounded-md overflow-hidden border-2 transition-all flex-shrink-0 ${
+                              selectedImageIndex === index
+                                ? "border-primary"
+                                : "border-transparent hover:border-white/20"
+                            }`}
+                          >
+                            <img src={img.url} alt="" className="w-full h-full object-cover" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
 
-                {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
-                  <div className="mb-6">
-                    <label className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2 block">
-                      Tamanho
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedProduct.sizes.map((size) => (
-                        <button
-                          key={size}
-                          onClick={() => setSelectedSize(size)}
-                          className={`px-4 py-2 text-sm font-bold rounded-md transition-all ${
-                            selectedSize === size
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-secondary hover:bg-secondary/80 text-muted-foreground"
-                          }`}
+                  <div className="p-6 md:p-8 flex flex-col">
+                    <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-2">
+                      {CATEGORY_LABELS[selectedProduct.category]}
+                    </span>
+                    <h2 className="text-3xl mb-3">{selectedProduct.name}</h2>
+                    <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+                      {selectedProduct.description}
+                    </p>
+                    <p className="text-2xl font-bold text-primary mb-6">
+                      {formatPrice(selectedProduct.price)}
+                    </p>
+                    {(selectedProduct.shipping_cost ?? 0) > 0 && (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+                        <Truck className="h-4 w-4" />
+                        <span>Frete: {formatPrice(selectedProduct.shipping_cost ?? 0)}</span>
+                      </div>
+                    )}
+
+                    {selectedProduct.colors && selectedProduct.colors.length > 0 && (
+                      <div className="mb-5">
+                        <label className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2 block">
+                          Cor
+                        </label>
+                        <div className="flex gap-2">
+                          {(selectedProduct.colors as ProductColor[]).map((color) => (
+                            <button
+                              key={color.name}
+                              onClick={() => setSelectedColor(color)}
+                              className={`w-10 h-10 rounded-md border-2 transition-all ${
+                                selectedColor?.name === color.name
+                                  ? "border-primary scale-110"
+                                  : "border-white/10 hover:border-white/30"
+                              }`}
+                              style={{ backgroundColor: color.hex }}
+                              title={color.name}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedProduct.sizes && selectedProduct.sizes.length > 0 && (
+                      <div className="mb-6">
+                        <label className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2 block">
+                          Tamanho
+                        </label>
+                        <div className="flex flex-wrap gap-2">
+                          {selectedProduct.sizes.map((size) => (
+                            <Button
+                              key={size}
+                              type="button"
+                              variant={selectedSize === size ? "default" : "secondary"}
+                              size="sm"
+                              onClick={() => setSelectedSize(size)}
+                              className={selectedSize === size ? "bg-primary text-primary-foreground" : ""}
+                            >
+                              {size}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="mb-6">
+                      <label className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2 block">
+                        Quantidade
+                      </label>
+                      <div className="flex items-center gap-3">
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
                         >
-                          {size}
-                        </button>
-                      ))}
+                          <Minus className="h-4 w-4" />
+                        </Button>
+                        <span className="w-10 text-center font-bold">{quantity}</span>
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          onClick={() => setQuantity(quantity + 1)}
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                )}
 
-                <div className="mb-6">
-                  <label className="text-xs uppercase tracking-wider text-muted-foreground font-bold mb-2 block">
-                    Quantidade
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="w-10 h-10 bg-secondary rounded-md flex items-center justify-center hover:bg-secondary/80 transition-colors font-bold"
+                    <Separator className="bg-white/[0.06] mb-6" />
+
+                    <Button
+                      onClick={handleAddToCart}
+                      className="mt-auto w-full h-12 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 rounded-md hover:shadow-[0_0_30px_rgba(220,38,38,0.3)] hover:scale-[1.02] transition-all"
                     >
-                      -
-                    </button>
-                    <span className="w-10 text-center font-bold">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="w-10 h-10 bg-secondary rounded-md flex items-center justify-center hover:bg-secondary/80 transition-colors font-bold"
-                    >
-                      +
-                    </button>
+                      <ShoppingBag className="h-5 w-5 mr-2" />
+                      Adicionar ao Carrinho
+                    </Button>
+
+                    <p className="text-[10px] text-muted-foreground/50 text-center mt-3">
+                      {selectedProduct.stock} unidades disponíveis
+                    </p>
                   </div>
                 </div>
-
-                <button
-                  onClick={handleAddToCart}
-                  className="mt-auto w-full py-4 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 transition-all rounded-md flex items-center justify-center gap-2"
-                >
-                  <ShoppingBag size={18} />
-                  Adicionar ao Carrinho
-                </button>
-
-                <p className="text-[10px] text-muted-foreground/50 text-center mt-3">
-                  {selectedProduct.stock} unidades disponíveis
-                </p>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
-
-      <Footer />
-    </div>
+              </ScrollArea>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
+    </PageShell>
   );
 };
 

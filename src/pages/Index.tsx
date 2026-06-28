@@ -1,18 +1,15 @@
-import Navigation from "@/components/Navigation";
+import PageShell from "@/components/PageShell";
 import Hero from "@/components/Hero";
 import OnerpmPlayer from "@/components/OnerpmPlayer";
 import FeaturedEvents from "@/components/FeaturedEvents";
-import Footer from "@/components/Footer";
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-background">
-      <Navigation />
+    <PageShell withFooter>
       <Hero />
       <OnerpmPlayer />
       <FeaturedEvents />
-      <Footer />
-    </div>
+    </PageShell>
   );
 };
 

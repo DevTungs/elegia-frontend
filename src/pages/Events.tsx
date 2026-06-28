@@ -2,8 +2,13 @@ import { Calendar, MapPin, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import { api } from "@/services/api";
 import { fetchBandsintownEvents, mergeEvents, type UnifiedEvent } from "@/services/bandsintown";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import PageShell from "@/components/PageShell";
+import PageHeader from "@/components/PageHeader";
+import AnimatedSection from "@/components/AnimatedSection";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -53,56 +58,50 @@ const Events = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      timeZone: "UTC",
-    });
-  };
-
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-
-      <main className="flex-1 pt-32 pb-24 relative overflow-hidden noise-bg">
+    <PageShell>
+      <section className="pt-32 pb-24 relative overflow-hidden noise-bg">
         <div className="absolute top-0 left-0 w-full h-[500px] bg-gradient-to-b from-primary/[0.05] via-background to-background pointer-events-none" />
+        <div className="glow-orb top-40 right-1/4 w-[500px] h-[500px] bg-primary/[0.03]" />
 
-        <section className="relative z-10">
-          <div className="container mx-auto px-4">
-            <div className="text-center mb-16">
-              <span className="text-primary font-bold tracking-[0.3em] uppercase text-[10px] mb-4 block">
-                Agenda
-              </span>
-              <h1 className="text-6xl md:text-8xl mb-6 tracking-wider">
-                EVENTOS
-              </h1>
-              <div className="h-0.5 w-16 bg-gradient-to-r from-transparent via-primary to-transparent mx-auto mb-6 opacity-50" />
-              <p className="text-foreground/60 text-lg max-w-xl mx-auto">
-                Confira nossos próximos shows e garanta seu ingresso.
-              </p>
+        <div className="container relative z-10 mx-auto px-4">
+          <AnimatedSection animation="fade-up">
+            <PageHeader
+              eyebrow="Agenda"
+              title="Eventos"
+              description="Confira nossos próximos shows e garanta seu ingresso."
+            />
+          </AnimatedSection>
+
+          {loading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <Skeleton key={i} className="h-[420px] rounded-xl bg-white/[0.03]" />
+              ))}
             </div>
-
-            {loading ? (
-              <div className="flex justify-center py-20">
-                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-primary"></div>
-              </div>
-            ) : events.length === 0 ? (
-              <div className="section-frame p-12 rounded-lg text-center max-w-2xl mx-auto">
-                <Calendar className="w-12 h-12 text-primary/30 mx-auto mb-4" />
-                <h3 className="text-2xl mb-2">Nenhum evento no momento</h3>
-                <p className="text-foreground/50 text-sm">
-                  Fique de olho nas nossas redes sociais para não perder os próximos anúncios!
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
-                {events.map((event) => (
-                  <Dialog key={event.id}>
+          ) : events.length === 0 ? (
+            <AnimatedSection animation="scale">
+              <Card className="max-w-2xl mx-auto bg-card/50 border-white/[0.06]">
+                <CardContent className="p-12 text-center">
+                  <Calendar className="w-12 h-12 text-primary/30 mx-auto mb-4" />
+                  <h3 className="text-2xl mb-2">Nenhum evento no momento</h3>
+                  <p className="text-muted-foreground text-sm">
+                    Fique de olho nas nossas redes sociais para não perder os próximos anúncios!
+                  </p>
+                </CardContent>
+              </Card>
+            </AnimatedSection>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
+              {events.map((event, index) => (
+                <AnimatedSection
+                  key={event.id}
+                  animation="fade-up"
+                  delay={((index % 3) + 1) as 1 | 2 | 3}
+                >
+                  <Dialog>
                     <DialogTrigger asChild>
-                      <article className="group relative overflow-hidden section-frame rounded-lg hover:border-primary/30 transition-all duration-500 flex flex-col h-full cursor-pointer lift-hover">
+                      <Card className="group overflow-hidden bg-card/60 border-white/[0.06] backdrop-blur-xl cursor-pointer transition-all duration-500 hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(220,38,38,0.15)] hover:-translate-y-1 flex flex-col h-full">
                         <div className="aspect-[16/9] overflow-hidden relative">
                           <img
                             src={event.image_url}
@@ -112,7 +111,7 @@ const Events = () => {
                           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
                         </div>
 
-                        <div className="p-6 relative flex flex-col flex-1">
+                        <CardContent className="p-6 relative flex flex-col flex-1">
                           <h2 className="text-2xl mb-3 group-hover:text-primary transition-colors line-clamp-2">
                             {event.title}
                           </h2>
@@ -120,7 +119,7 @@ const Events = () => {
                           <div className="space-y-2 text-sm text-foreground/70 mb-4 flex-1">
                             <div className="flex items-center gap-3">
                               <Calendar size={14} className="text-primary flex-shrink-0" />
-                              <span className="font-medium">{formatDate(event.date)}</span>
+                              <span className="font-medium">{event.formatted_date}</span>
                             </div>
                             <div className="flex items-center gap-3">
                               <MapPin size={14} className="text-primary flex-shrink-0" />
@@ -131,63 +130,64 @@ const Events = () => {
                             </p>
                           </div>
 
-                          <span className="mt-auto text-primary font-bold text-xs tracking-[0.15em] uppercase flex items-center justify-center gap-2 py-3 border border-primary/20 rounded-md bg-primary/5 group-hover:bg-primary/10 group-hover:border-primary/40 transition-all">
+                          <Badge
+                            variant="outline"
+                            className="mt-auto w-full py-2.5 text-xs font-bold uppercase tracking-[0.15em] border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/40 justify-center"
+                          >
                             Ver Detalhes
-                          </span>
-                        </div>
-                      </article>
+                          </Badge>
+                        </CardContent>
+                      </Card>
                     </DialogTrigger>
 
-                    <DialogContent className="max-w-2xl section-frame border-white/[0.08] bg-card/95 backdrop-blur-2xl">
-                      <DialogHeader>
+                    <DialogContent className="max-w-2xl bg-card/95 border-white/[0.08] backdrop-blur-2xl p-0 overflow-hidden">
+                      <DialogHeader className="p-6 pb-0">
                         <DialogTitle className="text-3xl tracking-wide text-foreground pr-8">
                           {event.title}
                         </DialogTitle>
-                        <DialogDescription asChild>
-                          <div className="text-foreground/80 mt-4 h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-                            <img
-                              src={event.image_url}
-                              alt={event.title}
-                              className="w-full h-72 object-cover rounded-lg border border-white/[0.06] mb-6"
-                            />
+                      </DialogHeader>
+                      <DialogDescription asChild>
+                        <div className="text-foreground/80 p-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                          <img
+                            src={event.image_url}
+                            alt={event.title}
+                            className="w-full h-72 object-cover rounded-lg border border-white/[0.06] mb-6"
+                          />
 
-                            <div className="flex flex-col sm:flex-row gap-4 mb-8 bg-secondary/50 p-4 rounded-lg border border-white/[0.04]">
-                              <div className="flex items-center gap-3">
-                                <Calendar size={18} className="text-primary" />
-                                <span className="font-medium text-foreground">{formatDate(event.date)}</span>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <MapPin size={18} className="text-primary" />
-                                <span className="font-medium text-foreground">{event.location}</span>
-                              </div>
+                          <div className="flex flex-col sm:flex-row gap-4 mb-8 bg-secondary/50 p-4 rounded-lg border border-white/[0.04]">
+                            <div className="flex items-center gap-3">
+                              <Calendar size={18} className="text-primary" />
+                              <span className="font-medium text-foreground">{event.formatted_date}</span>
                             </div>
-
-                            <div className="text-foreground/80 whitespace-pre-wrap leading-relaxed mb-8">
-                              {event.description}
+                            <div className="flex items-center gap-3">
+                              <MapPin size={18} className="text-primary" />
+                              <span className="font-medium text-foreground">{event.location}</span>
                             </div>
+                          </div>
 
-                            <a
-                              href={event.ticket_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-full py-4 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 transition-all rounded-md flex justify-center items-center gap-2 hover:shadow-[0_0_30px_rgba(220,38,38,0.3)]"
-                            >
+                          <div className="text-foreground/80 whitespace-pre-wrap leading-relaxed mb-8">
+                            {event.description}
+                          </div>
+
+                          <Button
+                            asChild
+                            className="w-full h-12 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 hover:shadow-[0_0_30px_rgba(220,38,38,0.3)] rounded-md"
+                          >
+                            <a href={event.ticket_link} target="_blank" rel="noopener noreferrer">
                               {event.ticket_cta} <ExternalLink size={18} />
                             </a>
-                          </div>
-                        </DialogDescription>
-                      </DialogHeader>
+                          </Button>
+                        </div>
+                      </DialogDescription>
                     </DialogContent>
                   </Dialog>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-      </main>
-
-      <Footer />
-    </div>
+                </AnimatedSection>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+    </PageShell>
   );
 };
 

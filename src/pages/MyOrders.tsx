@@ -2,11 +2,15 @@ import { useState } from "react";
 import { api } from "@/services/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Loader2, Package, Search, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
-import Navigation from "@/components/Navigation";
-import Footer from "@/components/Footer";
+import PageShell from "@/components/PageShell";
+import PageHeader from "@/components/PageHeader";
+import AnimatedSection from "@/components/AnimatedSection";
 
 interface Order {
   id: string;
@@ -31,13 +35,13 @@ const statusLabels: Record<string, string> = {
   canceled: "Cancelado",
 };
 
-const statusColors: Record<string, string> = {
-  pending: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-  received: "bg-green-500/10 text-green-500 border-green-500/20",
-  confirmed: "bg-green-500/10 text-green-500 border-green-500/20",
-  overdue: "bg-red-500/10 text-red-500 border-red-500/20",
-  refunded: "bg-orange-500/10 text-orange-500 border-orange-500/20",
-  canceled: "bg-red-500/10 text-red-500 border-red-500/20",
+const statusVariants: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  pending: "outline",
+  received: "default",
+  confirmed: "default",
+  overdue: "destructive",
+  refunded: "secondary",
+  canceled: "destructive",
 };
 
 const formatPrice = (price: number) =>
@@ -105,136 +109,151 @@ export default function MyOrders() {
     }
   };
 
+  const getPaymentLabel = (type: string) => {
+    switch (type) {
+      case "PIX":
+        return "PIX";
+      case "BOLETO":
+        return "Boleto";
+      case "CREDIT_CARD":
+        return "Cartão";
+      default:
+        return type;
+    }
+  };
+
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <Navigation />
+    <PageShell>
+      <section className="pt-28 pb-24 relative overflow-hidden noise-bg">
+        <div className="absolute top-0 left-0 w-full h-[400px] bg-gradient-to-b from-primary/[0.04] to-transparent pointer-events-none" />
 
-      <main className="flex-1 pt-24 pb-16">
-        <div className="container mx-auto px-4 max-w-3xl">
-          <div className="text-center mb-10">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-wider mb-4">
-              MEUS PEDIDOS
-            </h1>
-            <p className="text-muted-foreground">
-              Consulte o status das suas compras informando o e-mail e CPF/CNPJ usados no checkout.
-            </p>
-          </div>
+        <div className="container mx-auto px-4 max-w-3xl relative z-10">
+          <AnimatedSection animation="fade-up">
+            <PageHeader title="Meus Pedidos" align="center">
+              <p className="text-muted-foreground">
+                Consulte o status das suas compras informando o e-mail e CPF/CNPJ usados no checkout.
+              </p>
+            </PageHeader>
+          </AnimatedSection>
 
-          <div className="section-frame rounded-lg p-6 md:p-8 mb-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="seu@email.com"
-                    required
-                    className="bg-background"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="cpf">CPF/CNPJ</Label>
-                  <Input
-                    id="cpf"
-                    value={cpfCnpj}
-                    onChange={(e) => setCpfCnpj(formatCpfCnpj(e.target.value))}
-                    placeholder="000.000.000-00"
-                    required
-                    className="bg-background"
-                  />
-                </div>
-              </div>
+          <AnimatedSection animation="fade-up" delay={2}>
+            <Card className="surface-elevated border-white/[0.06] mb-8">
+              <CardContent className="p-6 md:p-8">
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="email">E-mail</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="seu@email.com"
+                        required
+                        className="bg-background border-white/[0.08]"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="cpf">CPF/CNPJ</Label>
+                      <Input
+                        id="cpf"
+                        value={cpfCnpj}
+                        onChange={(e) => setCpfCnpj(formatCpfCnpj(e.target.value))}
+                        placeholder="000.000.000-00"
+                        required
+                        className="bg-background border-white/[0.08]"
+                      />
+                    </div>
+                  </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-4 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 transition-all rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 size={18} className="animate-spin" />
-                    Buscando...
-                  </>
-                ) : (
-                  <>
-                    <Search size={18} />
-                    Buscar Pedidos
-                  </>
-                )}
-              </button>
-            </form>
-          </div>
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full h-12 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 hover:shadow-[0_0_30px_rgba(220,38,38,0.3)] rounded-md transition-all"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                        Buscando...
+                      </>
+                    ) : (
+                      <>
+                        <Search className="h-5 w-5 mr-2" />
+                        Buscar Pedidos
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </AnimatedSection>
 
           {searched && !loading && orders.length === 0 && (
-            <div className="text-center py-12 section-frame rounded-lg">
-              <Package size={48} className="mx-auto text-muted-foreground/30 mb-4" />
-              <p className="text-lg text-muted-foreground">Nenhum pedido encontrado</p>
-              <p className="text-sm text-muted-foreground/60 mt-1">
-                Verifique se o e-mail e CPF/CNPJ estão corretos.
-              </p>
-            </div>
+            <AnimatedSection animation="scale">
+              <Card className="surface-elevated border-white/[0.06]">
+                <CardContent className="p-12 text-center">
+                  <Package className="h-12 w-12 text-muted-foreground/30 mx-auto mb-4" />
+                  <p className="text-lg text-muted-foreground">Nenhum pedido encontrado</p>
+                  <p className="text-sm text-muted-foreground/60 mt-1">
+                    Verifique se o e-mail e CPF/CNPJ estão corretos.
+                  </p>
+                </CardContent>
+              </Card>
+            </AnimatedSection>
           )}
 
           {orders.length > 0 && (
             <div className="space-y-4">
-              <h2 className="text-lg font-bold uppercase tracking-wider">
-                {orders.length} pedido{orders.length > 1 ? "s" : ""} encontrado{orders.length > 1 ? "s" : ""}
-              </h2>
+              <AnimatedSection animation="fade-up">
+                <h2 className="text-lg font-bold uppercase tracking-wider">
+                  {orders.length} pedido{orders.length > 1 ? "s" : ""} encontrado
+                  {orders.length > 1 ? "s" : ""}
+                </h2>
+              </AnimatedSection>
 
-              {orders.map((order) => (
-                <div
-                  key={order.id}
-                  className="section-frame rounded-lg p-5 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-sm text-muted-foreground">
-                        #{order.id.slice(0, 8).toUpperCase()}
-                      </span>
-                      <span
-                        className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
-                          statusColors[order.status] || "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {statusLabels[order.status] || order.status}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {formatDate(order.created_at)} • {order.customer_name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Pagamento: {order.billing_type === "PIX" ? "PIX" : order.billing_type === "BOLETO" ? "Boleto" : "Cartão"}
-                    </p>
-                    {order.tracking_code && (
-                      <p className="text-sm text-primary">
-                        Rastreio: {order.tracking_code}
+              {orders.map((order, index) => (
+                <AnimatedSection key={order.id} animation="fade-up" delay={((index % 3) + 1) as 1 | 2 | 3}>
+                  <Card className="surface-elevated border-white/[0.06] p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-primary/20 transition-colors">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                        <span className="font-mono text-sm text-muted-foreground">
+                          #{order.id.slice(0, 8).toUpperCase()}
+                        </span>
+                        <Badge variant={statusVariants[order.status] || "outline"}>
+                          {statusLabels[order.status] || order.status}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {formatDate(order.created_at)} • {order.customer_name}
                       </p>
-                    )}
-                  </div>
+                      <p className="text-sm text-muted-foreground">
+                        Pagamento: {getPaymentLabel(order.billing_type)}
+                      </p>
+                      {order.tracking_code && (
+                        <p className="text-sm text-primary">
+                          Rastreio: {order.tracking_code}
+                        </p>
+                      )}
+                    </div>
 
-                  <div className="flex items-center gap-4">
-                    <span className="text-xl font-bold text-primary">
-                      {formatPrice(order.total)}
-                    </span>
-                    <Link
-                      to={`/merch/success?order_id=${order.id}`}
-                      className="flex items-center gap-1 text-sm font-bold uppercase tracking-wider text-foreground hover:text-primary transition-colors"
-                    >
-                      <Eye size={16} />
-                      Ver
-                    </Link>
-                  </div>
-                </div>
+                    <div className="flex items-center gap-4">
+                      <span className="text-xl font-bold text-primary">
+                        {formatPrice(order.total)}
+                      </span>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link to={`/merch/success?order_id=${order.id}`} className="flex items-center gap-1">
+                          <Eye className="h-4 w-4" />
+                          Ver
+                        </Link>
+                      </Button>
+                    </div>
+                  </Card>
+                </AnimatedSection>
               ))}
             </div>
           )}
         </div>
-      </main>
-
-      <Footer />
-    </div>
+      </section>
+    </PageShell>
   );
 }

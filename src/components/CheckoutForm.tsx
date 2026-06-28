@@ -3,6 +3,9 @@ import { type CartItem, type BillingType, type CheckoutCustomer } from "@/types/
 import { checkoutService } from "@/services/checkout";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Separator } from "@/components/ui/separator";
 import { Loader2, CreditCard, QrCode, Banknote, Truck } from "lucide-react";
 import { toast } from "sonner";
 
@@ -127,7 +130,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
       <div className="space-y-2">
         <Label htmlFor="checkout-name">Nome completo *</Label>
         <Input
@@ -136,7 +139,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
           onChange={(e) => setCustomer({ ...customer, name: e.target.value })}
           required
           placeholder="Seu nome"
-          className="bg-background"
+          className="bg-background border-white/[0.08]"
         />
       </div>
 
@@ -150,7 +153,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
             onChange={(e) => setCustomer({ ...customer, email: e.target.value })}
             required
             placeholder="seu@email.com"
-            className="bg-background"
+            className="bg-background border-white/[0.08]"
           />
         </div>
         <div className="space-y-2">
@@ -162,7 +165,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
             onChange={(e) => setCustomer({ ...customer, phone: formatPhone(e.target.value) })}
             placeholder="(00) 00000-0000"
             maxLength={15}
-            className="bg-background"
+            className="bg-background border-white/[0.08]"
           />
         </div>
       </div>
@@ -176,7 +179,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
           required
           placeholder="000.000.000-00"
           maxLength={18}
-          className="bg-background"
+          className="bg-background border-white/[0.08]"
         />
       </div>
 
@@ -197,7 +200,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
                 required
                 placeholder="00000-000"
                 maxLength={9}
-                className="bg-background"
+                className="bg-background border-white/[0.08]"
               />
             </div>
             <div className="space-y-2">
@@ -209,7 +212,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
                 required
                 placeholder="SP"
                 maxLength={2}
-                className="bg-background"
+                className="bg-background border-white/[0.08]"
               />
             </div>
           </div>
@@ -222,7 +225,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
               onChange={(e) => updateAddress("street", e.target.value)}
               required
               placeholder="Nome da rua"
-              className="bg-background"
+              className="bg-background border-white/[0.08]"
             />
           </div>
 
@@ -235,7 +238,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
                 onChange={(e) => updateAddress("number", e.target.value)}
                 required
                 placeholder="123"
-                className="bg-background"
+                className="bg-background border-white/[0.08]"
               />
             </div>
             <div className="space-y-2">
@@ -245,7 +248,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
                 value={customer.address.complement}
                 onChange={(e) => updateAddress("complement", e.target.value)}
                 placeholder="Apto, bloco"
-                className="bg-background"
+                className="bg-background border-white/[0.08]"
               />
             </div>
           </div>
@@ -258,7 +261,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
               onChange={(e) => updateAddress("neighborhood", e.target.value)}
               required
               placeholder="Bairro"
-              className="bg-background"
+              className="bg-background border-white/[0.08]"
             />
           </div>
 
@@ -270,31 +273,32 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
               onChange={(e) => updateAddress("city", e.target.value)}
               required
               placeholder="Cidade"
-              className="bg-background"
+              className="bg-background border-white/[0.08]"
             />
           </div>
         </div>
       </div>
 
-      <div className="space-y-2 pt-2">
+      <div className="space-y-3 pt-2">
         <Label>Forma de pagamento</Label>
-        <div className="grid grid-cols-3 gap-2">
+        <RadioGroup
+          value={billingType}
+          onValueChange={(v) => setBillingType(v as BillingType)}
+          className="grid grid-cols-3 gap-2"
+        >
           {billingOptions.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => setBillingType(option.value)}
-              className={`flex flex-col items-center gap-1 p-3 rounded-md border transition-all ${
-                billingType === option.value
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-white/10 bg-secondary text-muted-foreground hover:border-white/30"
-              }`}
-            >
-              {option.icon}
-              <span className="text-xs font-bold uppercase tracking-wider">{option.label}</span>
-            </button>
+            <div key={option.value}>
+              <RadioGroupItem value={option.value} id={option.value} className="peer sr-only" />
+              <Label
+                htmlFor={option.value}
+                className="flex flex-col items-center gap-2 p-3 rounded-md border border-white/[0.08] bg-secondary text-muted-foreground transition-all peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 peer-data-[state=checked]:text-primary cursor-pointer hover:border-white/20"
+              >
+                {option.icon}
+                <span className="text-xs font-bold uppercase tracking-wider">{option.label}</span>
+              </Label>
+            </div>
           ))}
-        </div>
+        </RadioGroup>
       </div>
 
       <div className="pt-4 border-t border-white/[0.06]">
@@ -307,35 +311,37 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
             <span className="text-muted-foreground">Frete</span>
             <span>{formatPrice(shipping)}</span>
           </div>
-          <div className="flex justify-between items-center pt-2 border-t border-white/[0.06]">
+          <Separator className="bg-white/[0.06]" />
+          <div className="flex justify-between items-center">
             <span className="font-bold">Total</span>
             <span className="text-xl font-bold text-primary">{formatPrice(total)}</span>
           </div>
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={isLoading}
-          className="w-full py-4 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 transition-all rounded-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="w-full h-12 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 rounded-md disabled:opacity-50"
         >
           {isLoading ? (
             <>
-              <Loader2 size={18} className="animate-spin" />
+              <Loader2 size={18} className="animate-spin mr-2" />
               Processando...
             </>
           ) : (
             "Pagar com Asaas"
           )}
-        </button>
+        </Button>
 
-        <button
+        <Button
           type="button"
+          variant="ghost"
           onClick={onCancel}
           disabled={isLoading}
-          className="w-full py-3 mt-2 text-muted-foreground text-sm hover:text-foreground transition-colors"
+          className="w-full h-10 mt-2 text-muted-foreground hover:text-foreground"
         >
           Voltar ao carrinho
-        </button>
+        </Button>
       </div>
     </form>
   );
