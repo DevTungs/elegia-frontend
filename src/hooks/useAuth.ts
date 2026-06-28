@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { getToken, removeToken, getUser, isAdmin as checkAdmin } from "@/services/api";
+import { useEffect, useState, useCallback } from "react";
+import { getToken, removeToken, getUser, isAdmin as checkAdmin, api } from "@/services/api";
 
 interface AuthUser {
   id: string;
@@ -7,20 +7,47 @@ interface AuthUser {
   role: string;
 }
 
+interface MeResponse {
+  user: AuthUser;
+}
+
 export const useAuth = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  useEffect(() => {
+  const validateSession = useCallback(async () => {
     const token = getToken();
-    if (token) {
-      const userData = getUser();
-      setUser(userData);
-      setIsAdmin(checkAdmin());
+    if (!token) {
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    try {
+      const data = await api.get<MeResponse>("/auth/me");
+      if (data.user) {
+        setUser(data.user);
+        setIsAdmin(data.user.role === "admin");
+      } else {
+        removeToken();
+      }
+    } catch {
+      // Fallback: se a API falhar (offline, CORS, etc.), decodifica localmente
+      const userData = getUser();
+      if (userData) {
+        setUser(userData);
+        setIsAdmin(checkAdmin());
+      } else {
+        removeToken();
+      }
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    validateSession();
+  }, [validateSession]);
 
   const signOut = () => {
     removeToken();
