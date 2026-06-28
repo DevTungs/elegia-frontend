@@ -48,10 +48,14 @@ const OrderSuccess = () => {
       }
     }
 
+    let attempts = 0;
+    const maxAttempts = 60; // 5 minutes (5s * 60)
+
     const fetchOrder = async () => {
       try {
-        const data = await api.get<Order>(`/orders/${orderId}`);
+        const data = await api.get<Order>(`/orders/track/${orderId}`);
         setOrder(data);
+        return data;
       } catch (error) {
         console.error("Error fetching order:", error);
         toast.error("Erro ao carregar pedido");
@@ -61,14 +65,43 @@ const OrderSuccess = () => {
     };
 
     fetchOrder();
+
+    // Poll for payment status updates (Asaas webhook may take a few seconds)
+    const interval = setInterval(async () => {
+      attempts++;
+      if (attempts >= maxAttempts) {
+        clearInterval(interval);
+        return;
+      }
+
+      const updated = await api.get<Order>(`/orders/track/${orderId}`).catch(() => null);
+      if (updated) {
+        setOrder(updated);
+        if (updated.status === "received" || updated.status === "confirmed") {
+          clearInterval(interval);
+          toast.success("Pagamento confirmado!");
+        }
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, [orderId]);
+
+  // Prefer PIX data from the database (persistent), fallback to localStorage
+  const activePixData = order?.pix_payload
+    ? {
+        pixQrCode: order.pix_qr_code || pixData?.pixQrCode || null,
+        pixPayload: order.pix_payload,
+        paymentUrl: order.payment_url || pixData?.paymentUrl || null,
+      }
+    : pixData;
 
   const formatPrice = (price: number) =>
     price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
   const handleCopyPix = () => {
-    if (pixData?.pixPayload) {
-      navigator.clipboard.writeText(pixData.pixPayload);
+    if (activePixData?.pixPayload) {
+      navigator.clipboard.writeText(activePixData.pixPayload);
       toast.success("Código PIX copiado!");
     }
   };
@@ -212,16 +245,16 @@ const OrderSuccess = () => {
                   </div>
                 )}
 
-                {isPix && pixData?.pixPayload && !isPaid && (
+                {isPix && activePixData?.pixPayload && !isPaid && (
                   <div className="space-y-4 pt-4 border-t border-white/[0.06]">
                     <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold">
                       Pague com PIX
                     </p>
 
-                    {pixData.pixQrCode && (
+                    {activePixData.pixQrCode && (
                       <div className="flex justify-center">
                         <img
-                          src={`data:image/png;base64,${pixData.pixQrCode}`}
+                          src={`data:image/png;base64,${activePixData.pixQrCode}`}
                           alt="QR Code PIX"
                           className="w-48 h-48 bg-white p-2 rounded-lg"
                         />
@@ -234,7 +267,7 @@ const OrderSuccess = () => {
                         <input
                           type="text"
                           readOnly
-                          value={pixData.pixPayload}
+                          value={activePixData.pixPayload}
                           className="flex-1 bg-secondary border border-white/10 rounded-md px-3 py-2 text-xs text-muted-foreground truncate"
                         />
                         <Button

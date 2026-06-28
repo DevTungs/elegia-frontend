@@ -5,12 +5,18 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Package, Search, Eye } from "lucide-react";
+import { Loader2, Package, Search, Eye, Copy, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import PageShell from "@/components/PageShell";
 import PageHeader from "@/components/PageHeader";
 import AnimatedSection from "@/components/AnimatedSection";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface Order {
   id: string;
@@ -24,6 +30,8 @@ interface Order {
   created_at: string;
   paid_at: string | null;
   tracking_code: string | null;
+  pix_qr_code: string | null;
+  pix_payload: string | null;
 }
 
 const statusLabels: Record<string, string> = {
@@ -75,6 +83,7 @@ export default function MyOrders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,6 +130,17 @@ export default function MyOrders() {
         return type;
     }
   };
+
+  const handleCopyPix = (payload: string) => {
+    navigator.clipboard.writeText(payload);
+    toast.success("Código PIX copiado!");
+  };
+
+  const isPendingPix = (order: Order) =>
+    order.billing_type === "PIX" &&
+    order.pix_payload &&
+    order.status !== "received" &&
+    order.status !== "confirmed";
 
   return (
     <PageShell>
@@ -240,6 +260,17 @@ export default function MyOrders() {
                       <span className="text-xl font-bold text-primary">
                         {formatPrice(order.total)}
                       </span>
+                      {isPendingPix(order) && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedOrder(order)}
+                          className="flex items-center gap-1"
+                        >
+                          <QrCode className="h-4 w-4" />
+                          PIX
+                        </Button>
+                      )}
                       <Button variant="ghost" size="sm" asChild>
                         <Link to={`/merch/success?order_id=${order.id}`} className="flex items-center gap-1">
                           <Eye className="h-4 w-4" />
@@ -254,6 +285,45 @@ export default function MyOrders() {
           )}
         </div>
       </section>
+
+      <Dialog open={Boolean(selectedOrder)} onOpenChange={() => setSelectedOrder(null)}>
+        <DialogContent className="bg-card/95 border-white/[0.08] backdrop-blur-2xl max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl tracking-wide">Pague com PIX</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Pedido #{selectedOrder?.id.slice(0, 8).toUpperCase()}
+            </p>
+            {selectedOrder?.pix_qr_code && (
+              <div className="flex justify-center">
+                <img
+                  src={`data:image/png;base64,${selectedOrder.pix_qr_code}`}
+                  alt="QR Code PIX"
+                  className="w-56 h-56 bg-white p-2 rounded-lg"
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">Copie e cole no app do seu banco:</p>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={selectedOrder?.pix_payload || ""}
+                  className="flex-1 bg-secondary border border-white/10 rounded-md px-3 py-2 text-xs text-muted-foreground truncate"
+                />
+                <Button
+                  onClick={() => selectedOrder?.pix_payload && handleCopyPix(selectedOrder.pix_payload)}
+                  className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </PageShell>
   );
 }
