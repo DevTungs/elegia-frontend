@@ -264,11 +264,11 @@ const Merch = () => {
               <ScrollArea className="max-h-[85vh]">
                 <div className="grid md:grid-cols-2 gap-0">
                   <div>
-                    <div className="aspect-square bg-secondary overflow-hidden">
+                    <div className="h-full bg-secondary overflow-hidden">
                       <OptimizedImage
                         src={getProductImages(selectedProduct)[selectedImageIndex]?.url || selectedProduct.image_url}
                         alt={selectedProduct.name}
-                        className="w-full h-full object-contain"
+                        className="w-full h-full object-cover"
                         priority
                       />
                     </div>
