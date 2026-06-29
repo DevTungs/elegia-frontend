@@ -285,16 +285,27 @@ const OrderSuccess = () => {
 
                 {!isPaid && order.payment_url && (
                   <div className="pt-4 border-t border-white/[0.06]">
-                    <Button
-                      asChild
-                      variant="secondary"
-                      className="w-full h-11 font-bold uppercase tracking-widest rounded-md"
-                    >
-                      <a href={order.payment_url} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Pagar
-                      </a>
-                    </Button>
+                    {isPix && activePixData?.pixPayload ? (
+                      <Button
+                        onClick={handleCopyPix}
+                        variant="secondary"
+                        className="w-full h-11 font-bold uppercase tracking-widest rounded-md"
+                      >
+                        <Copy className="h-4 w-4 mr-2" />
+                        Copiar Código PIX
+                      </Button>
+                    ) : (
+                      <Button
+                        asChild
+                        variant="secondary"
+                        className="w-full h-11 font-bold uppercase tracking-widest rounded-md"
+                      >
+                        <a href={order.payment_url} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Pagar
+                        </a>
+                      </Button>
+                    )}
                   </div>
                 )}
 
