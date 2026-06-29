@@ -145,7 +145,7 @@ const Merch = () => {
                               <h3 className="text-xl md:text-2xl mb-2 group-hover:text-primary transition-colors">
                                 {product.name}
                               </h3>
-                              <p className="text-muted-foreground text-sm mb-4 line-clamp-2">
+                              <p className="text-muted-foreground text-sm mb-4 line-clamp-2 whitespace-pre-wrap">
                                 {product.description}
                               </p>
                               <p className="text-xl font-bold text-primary">{formatPrice(product.price)}</p>
@@ -238,7 +238,7 @@ const Merch = () => {
                             <h3 className="text-lg mt-1 mb-2 group-hover:text-primary transition-colors">
                               {product.name}
                             </h3>
-                            <p className="text-muted-foreground text-sm line-clamp-2 mb-3">
+                            <p className="text-muted-foreground text-sm line-clamp-2 mb-3 whitespace-pre-wrap">
                               {product.description}
                             </p>
                             <p className="text-lg font-bold text-primary">{formatPrice(product.price)}</p>
@@ -296,7 +296,7 @@ const Merch = () => {
                       {CATEGORY_LABELS[selectedProduct.category]}
                     </span>
                     <h2 className="text-3xl mb-3">{selectedProduct.name}</h2>
-                    <p className="text-muted-foreground text-sm mb-6 leading-relaxed">
+                    <p className="text-muted-foreground text-sm mb-6 leading-relaxed whitespace-pre-wrap">
                       {selectedProduct.description}
                     </p>
                     <p className="text-2xl font-bold text-primary mb-6">
