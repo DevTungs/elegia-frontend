@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, CreditCard, QrCode, Truck } from "lucide-react";
+import { Loader2, CreditCard, QrCode, Truck, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface CheckoutFormProps {
@@ -363,8 +363,18 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
           </div>
           <div className="flex justify-between items-center text-sm">
             <span className="text-muted-foreground">Frete</span>
-            <span>{formatPrice(shipping)}</span>
+            {shipping > 0 ? (
+              <span>{formatPrice(shipping)}</span>
+            ) : (
+              <span className="text-yellow-500 font-medium">Frete a combinar</span>
+            )}
           </div>
+          {shipping === 0 && (
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary/50 rounded-md px-3 py-2">
+              <MessageCircle className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span>Entraremos em contato via WhatsApp após a confirmação do pedido para combinar o frete</span>
+            </div>
+          )}
           <Separator className="bg-white/[0.06]" />
           <div className="flex justify-between items-center">
             <span className="font-bold">Total</span>

@@ -27,6 +27,7 @@ import {
   ShoppingCart,
   Search,
   ClipboardList,
+  MessageCircle,
 } from "lucide-react";
 import PageShell from "@/components/PageShell";
 import AnimatedSection from "@/components/AnimatedSection";
@@ -812,7 +813,7 @@ const Admin = () => {
                                     </div>
                                     <div className="space-y-1 text-sm text-muted-foreground mb-3">
                                       <div className="flex items-center gap-2"><DollarSign size={14} /><span>R$ {product.price.toFixed(2)}</span></div>
-                                      <div className="flex items-center gap-2"><Truck size={14} /><span>Frete: R$ {(product.shipping_cost ?? 0).toFixed(2)}</span></div>
+                                      <div className="flex items-center gap-2"><Truck size={14} /><span>{product.shipping_cost > 0 ? `Frete: R$ ${product.shipping_cost.toFixed(2)}` : "Frete: A combinar"}</span></div>
                                       <div className="flex items-center gap-2"><Layers size={14} /><span>Estoque: {product.stock}</span></div>
                                       <div className="flex items-center gap-2"><Tag size={14} /><span>{CATEGORY_OPTIONS.find((c) => c.value === product.category)?.label}</span></div>
                                     </div>
@@ -885,6 +886,12 @@ const Admin = () => {
                                 <p className="text-xl font-bold text-primary">R$ {order.total.toFixed(2)}</p>
                                 <p className="text-xs text-muted-foreground">{new Date(order.created_at).toLocaleDateString("pt-BR")}</p>
                                 <p className="text-xs text-muted-foreground capitalize">{getPaymentLabel(order.billing_type)}</p>
+                                {order.shipping_cost === 0 && (
+                                  <p className="text-xs text-yellow-500 font-medium flex items-center gap-1 mt-1">
+                                    <MessageCircle size={11} />
+                                    Frete a combinar
+                                  </p>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -923,7 +930,22 @@ const Admin = () => {
                       <p className="font-bold">{selectedOrder.customer_name}</p>
                       <p className="text-sm text-muted-foreground">{selectedOrder.customer_email}</p>
                       <p className="text-sm text-muted-foreground">{selectedOrder.customer_cpf_cnpj}</p>
-                      {selectedOrder.customer_phone && <p className="text-sm text-muted-foreground">{selectedOrder.customer_phone}</p>}
+                      {selectedOrder.customer_phone && (
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm text-muted-foreground">{selectedOrder.customer_phone}</p>
+                          {selectedOrder.shipping_cost === 0 && (
+                            <a
+                              href={`https://wa.me/55${selectedOrder.customer_phone.replace(/\D/g, "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs text-green-500 hover:text-green-400 font-bold"
+                            >
+                              <MessageCircle size={14} />
+                              WhatsApp
+                            </a>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div className="space-y-2">
                       <p className="text-xs uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1"><MapPin size={14} />Endereço de entrega</p>
@@ -945,7 +967,7 @@ const Admin = () => {
                       ))}
                       <Separator className="bg-white/[0.06]" />
                       <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span>R$ {selectedOrder.subtotal.toFixed(2)}</span></div>
-                      <div className="flex justify-between text-sm"><span className="text-muted-foreground">Frete</span><span>R$ {selectedOrder.shipping_cost.toFixed(2)}</span></div>
+                      <div className="flex justify-between text-sm"><span className="text-muted-foreground">Frete</span><span>{selectedOrder.shipping_cost > 0 ? `R$ ${selectedOrder.shipping_cost.toFixed(2)}` : <span className="text-yellow-500">A combinar</span>}</span></div>
                       <Separator className="bg-white/[0.06]" />
                       <div className="flex justify-between items-center"><span className="font-bold">Total</span><span className="text-lg font-bold text-primary">R$ {selectedOrder.total.toFixed(2)}</span></div>
                     </div>

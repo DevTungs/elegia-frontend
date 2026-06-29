@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CheckCircle, Copy, Loader2, AlertCircle, ExternalLink, MapPin, Truck } from "lucide-react";
+import { CheckCircle, Copy, Loader2, AlertCircle, ExternalLink, MapPin, Truck, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 
 interface LocalPixData {
@@ -201,8 +201,18 @@ const OrderSuccess = () => {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Frete</span>
-                    <span className="font-medium">{formatPrice(order.shipping_cost)}</span>
+                    {order.shipping_cost > 0 ? (
+                      <span className="font-medium">{formatPrice(order.shipping_cost)}</span>
+                    ) : (
+                      <span className="text-yellow-500 font-medium">A combinar</span>
+                    )}
                   </div>
+                  {order.shipping_cost === 0 && (
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-secondary/50 rounded-md px-3 py-2">
+                      <MessageCircle className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <span>Entraremos em contato via WhatsApp para combinar o frete e acertar a entrega</span>
+                    </div>
+                  )}
                   <Separator className="bg-white/[0.06]" />
                   <div className="flex justify-between items-center">
                     <span className="font-bold">Total</span>

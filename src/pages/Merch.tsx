@@ -6,7 +6,7 @@ import PageShell from "@/components/PageShell";
 import PageHeader from "@/components/PageHeader";
 import AnimatedSection from "@/components/AnimatedSection";
 import OptimizedImage from "@/components/OptimizedImage";
-import { ShoppingBag, Star, Truck, Minus, Plus, Sparkles } from "lucide-react";
+import { ShoppingBag, Star, Truck, Minus, Plus, Sparkles, MessageCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -302,10 +302,15 @@ const Merch = () => {
                     <p className="text-2xl font-bold text-primary mb-6">
                       {formatPrice(selectedProduct.price)}
                     </p>
-                    {(selectedProduct.shipping_cost ?? 0) > 0 && (
+                    {(selectedProduct.shipping_cost ?? 0) > 0 ? (
                       <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
                         <Truck className="h-4 w-4" />
                         <span>Frete: {formatPrice(selectedProduct.shipping_cost ?? 0)}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground mb-6">
+                        <MessageCircle className="h-4 w-4 text-primary" />
+                        <span>Frete a combinar</span>
                       </div>
                     )}
 
