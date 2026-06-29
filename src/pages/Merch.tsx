@@ -268,7 +268,7 @@ const Merch = () => {
                       <OptimizedImage
                         src={getProductImages(selectedProduct)[selectedImageIndex]?.url || selectedProduct.image_url}
                         alt={selectedProduct.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         priority
                       />
                     </div>
