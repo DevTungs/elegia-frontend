@@ -131,12 +131,19 @@ const Merch = () => {
                           className="group overflow-hidden surface-elevated cursor-pointer transition-all duration-500 hover:border-primary/30 hover:shadow-[0_20px_50px_rgba(220,38,38,0.15)] hover:-translate-y-1"
                         >
                           <div className="flex flex-col sm:flex-row">
-                            <div className="sm:w-48 h-52 sm:h-auto bg-secondary flex-shrink-0 overflow-hidden">
+                            <div className="sm:w-48 h-52 sm:h-auto bg-secondary flex-shrink-0 overflow-hidden relative">
                               <OptimizedImage
-                                src={getPrimaryImage(product)}
+                                src={getProductImages(product)[0]?.url || ""}
                                 alt={product.name}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                                className="w-full h-full object-cover group-hover:opacity-0 transition-all duration-500 group-hover:scale-105"
                               />
+                              {getProductImages(product).length > 1 && (
+                                <OptimizedImage
+                                  src={getProductImages(product)[1]?.url || ""}
+                                  alt={product.name}
+                                  className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105"
+                                />
+                              )}
                             </div>
                             <CardContent className="p-6 flex flex-col justify-center flex-1">
                               <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-2">
@@ -194,12 +201,13 @@ const Merch = () => {
                     </Card>
                   </AnimatedSection>
                 ) : (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-x-auto snap-x snap-mandatory scrollbar-hide md:overflow-visible md:snap-none pb-4 md:pb-0">
                     {filteredProducts.map((product, index) => (
                       <AnimatedSection
                         key={product.id}
                         animation="fade-up"
                         delay={((index % 3) + 1) as 1 | 2 | 3}
+                        className="min-w-[260px] md:min-w-0 snap-start"
                       >
                         <Card
                           onClick={() => handleProductClick(product)}
@@ -207,10 +215,17 @@ const Merch = () => {
                         >
                           <div className="aspect-square bg-secondary overflow-hidden relative">
                             <OptimizedImage
-                              src={getPrimaryImage(product)}
+                              src={getProductImages(product)[0]?.url || ""}
                               alt={product.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                              className="w-full h-full object-cover group-hover:opacity-0 transition-all duration-500 group-hover:scale-105"
                             />
+                            {getProductImages(product).length > 1 && (
+                              <OptimizedImage
+                                src={getProductImages(product)[1]?.url || ""}
+                                alt={product.name}
+                                className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105"
+                              />
+                            )}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
                               <Button className="w-full bg-primary text-primary-foreground text-xs font-bold uppercase tracking-widest rounded-md">
