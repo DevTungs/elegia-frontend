@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api } from "@/services/api";
 import { type Product, type ProductColor, CATEGORY_LABELS } from "@/types/merch";
 import { useCart } from "@/hooks/useCart";
@@ -21,6 +21,12 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  type CarouselApi,
+} from "@/components/ui/carousel";
 
 const Merch = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -31,6 +37,7 @@ const Merch = () => {
   const [selectedColor, setSelectedColor] = useState<ProductColor | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [carouselApi, setCarouselApi] = useState<CarouselApi>(null);
   const { addToCart } = useCart();
 
   const getProductImages = (product: Product): { url: string; is_primary: boolean }[] => {
@@ -88,6 +95,23 @@ const Merch = () => {
 
   const formatPrice = (price: number) =>
     price.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  const onCarouselSelect = useCallback((api: CarouselApi) => {
+    if (!api) return;
+    setSelectedImageIndex(api.selectedScrollSnap());
+  }, []);
+
+  useEffect(() => {
+    if (!carouselApi) return;
+    carouselApi.on("select", onCarouselSelect);
+    return () => {
+      carouselApi.off("select", onCarouselSelect);
+    };
+  }, [carouselApi, onCarouselSelect]);
+
+  useEffect(() => {
+    carouselApi?.scrollTo(selectedImageIndex);
+  }, [carouselApi, selectedImageIndex]);
 
   return (
     <PageShell>
@@ -280,14 +304,22 @@ const Merch = () => {
                 <div className="flex flex-col md:grid md:grid-cols-2">
                   <div className="md:sticky md:top-0 md:self-start">
                     <div className="relative bg-secondary overflow-hidden max-h-[45vh] md:max-h-[calc(85vh-90px)]">
-                      <OptimizedImage
-                        src={getProductImages(selectedProduct)[selectedImageIndex]?.url || selectedProduct.image_url}
-                        alt={selectedProduct.name}
-                        className="w-full h-full object-contain md:object-cover"
-                        priority
-                      />
+                      <Carousel setApi={setCarouselApi} className="w-full h-full">
+                        <CarouselContent>
+                          {getProductImages(selectedProduct).map((img, index) => (
+                            <CarouselItem key={index}>
+                              <OptimizedImage
+                                src={img.url}
+                                alt={selectedProduct.name}
+                                className="w-full h-[45vh] md:h-[calc(85vh-90px)] object-contain"
+                                priority={index === 0}
+                              />
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                      </Carousel>
                       {getProductImages(selectedProduct).length > 1 && (
-                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 md:hidden">
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2">
                           {getProductImages(selectedProduct).map((_, index) => (
                             <button
                               key={index}
