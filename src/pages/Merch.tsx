@@ -277,18 +277,33 @@ const Merch = () => {
                 <DialogTitle>{selectedProduct.name}</DialogTitle>
               </DialogHeader>
               <ScrollArea className="max-h-[85vh]">
-                <div className="grid md:grid-cols-2 gap-0">
-                  <div>
-                    <div className="h-full bg-secondary overflow-hidden">
+                <div className="flex flex-col md:grid md:grid-cols-2">
+                  <div className="md:sticky md:top-0 md:self-start">
+                    <div className="relative bg-secondary overflow-hidden max-h-[45vh] md:max-h-[calc(85vh-90px)]">
                       <OptimizedImage
                         src={getProductImages(selectedProduct)[selectedImageIndex]?.url || selectedProduct.image_url}
                         alt={selectedProduct.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain md:object-cover"
                         priority
                       />
+                      {getProductImages(selectedProduct).length > 1 && (
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2 md:hidden">
+                          {getProductImages(selectedProduct).map((_, index) => (
+                            <button
+                              key={index}
+                              onClick={() => setSelectedImageIndex(index)}
+                              className={`h-2 rounded-full transition-all ${
+                                selectedImageIndex === index
+                                  ? "w-5 bg-primary"
+                                  : "w-2 bg-white/50 hover:bg-white/80"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      )}
                     </div>
                     {getProductImages(selectedProduct).length > 1 && (
-                      <div className="flex gap-2 p-3 border-t border-white/[0.08]">
+                      <div className="hidden md:flex gap-2 p-3 border-t border-white/[0.08]">
                         {getProductImages(selectedProduct).map((img, index) => (
                           <button
                             key={index}
@@ -306,7 +321,7 @@ const Merch = () => {
                     )}
                   </div>
 
-                  <div className="p-6 md:p-8 flex flex-col">
+                  <div className="p-6 md:p-8 flex flex-col md:overflow-y-auto md:max-h-[85vh]">
                     <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-2">
                       {CATEGORY_LABELS[selectedProduct.category]}
                     </span>
