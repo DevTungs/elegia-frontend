@@ -945,6 +945,16 @@ const Admin = () => {
                   <div className="flex flex-wrap items-center gap-2">
                     {getStatusBadge(selectedOrder.status)}
                     <span className="text-sm text-muted-foreground capitalize">{getPaymentLabel(selectedOrder.billing_type)}</span>
+                    <Button
+                      onClick={() => notifyOrder(selectedOrder.id)}
+                      disabled={notifying}
+                      variant="outline"
+                      size="sm"
+                      className="ml-auto font-bold uppercase border-green-500/30 text-green-500 hover:bg-green-500/10"
+                    >
+                      <MessageCircle size={14} className="mr-1" />
+                      {notifying ? "Enviando..." : "Reenviar notificação de confirmação"}
+                    </Button>
                   </div>
 
                   <div className="grid md:grid-cols-2 gap-6">
@@ -1019,10 +1029,6 @@ const Admin = () => {
                       </div>
                     </div>
                     {selectedOrder.shipped_at && <p className="text-xs text-muted-foreground">Enviado em {new Date(selectedOrder.shipped_at).toLocaleDateString("pt-BR")}</p>}
-                    <Button onClick={() => notifyOrder(selectedOrder.id)} disabled={notifying} variant="outline" className="w-full h-11 font-bold uppercase border-green-500/30 text-green-500 hover:bg-green-500/10">
-                      <MessageCircle size={16} className="mr-2" />
-                      {notifying ? "Enviando..." : "Notificar WhatsApp"}
-                    </Button>
                     <Button onClick={handleSaveTracking} className="w-full h-11 bg-primary font-bold uppercase"><Check size={16} className="mr-2" />Salvar alterações</Button>
                   </div>
                 </div>
