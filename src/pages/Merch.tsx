@@ -311,7 +311,7 @@ const Merch = () => {
                               <OptimizedImage
                                 src={img.url}
                                 alt={selectedProduct.name}
-                                className="w-full h-[45vh] md:h-[calc(85vh-90px)] object-cover"
+                                className="w-full h-[45vh] md:h-[calc(85vh-90px)] object-contain"
                                 priority={index === 0}
                               />
                             </CarouselItem>
