@@ -257,10 +257,10 @@ const Merch = () => {
                                 Ver Detalhes
                               </Button>
                             </div>
-                            {product.stock < 20 && (
-                              <div className="absolute top-3 left-3">
-                                <Badge variant="destructive" className="text-[10px]">
-                                  Últimas unidades
+                            {product.stock < 5 && (
+                              <div className="absolute top-3 left-3 animate-pulse">
+                                <Badge variant="destructive" className="text-[11px] px-3 py-1">
+                                  ⚡ Restam poucas unidades!
                                 </Badge>
                               </div>
                             )}
@@ -454,9 +454,20 @@ const Merch = () => {
                       Adicionar ao Carrinho
                     </Button>
 
-                    <p className="text-[10px] text-muted-foreground/50 text-center mt-3">
-                      {selectedProduct.stock} unidades disponíveis
-                    </p>
+                    {selectedProduct.stock < 5 ? (
+                      <div className="mt-3 p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-center animate-pulse">
+                        <p className="text-xs font-bold text-destructive">
+                          ⚡ Restam apenas {selectedProduct.stock} {selectedProduct.stock === 1 ? "unidade" : "unidades"}!
+                        </p>
+                        <p className="text-[10px] text-destructive/70 mt-1">
+                          Garanta a sua antes que acabe
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-[10px] text-muted-foreground/50 text-center mt-3">
+                        {selectedProduct.stock} unidades disponíveis
+                      </p>
+                    )}
                   </div>
                 </div>
               </ScrollArea>
