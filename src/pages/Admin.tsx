@@ -155,6 +155,17 @@ const Admin = () => {
   const [orderSearch, setOrderSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [trackingForm, setTrackingForm] = useState({ code: "", status: "" });
+  const [notifying, setNotifying] = useState(false);
+
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      signOut();
+      navigate("/auth");
+      toast({ variant: "destructive", title: "Sessão expirada", description: "Seu token expirou. Faça login novamente." });
+    };
+    window.addEventListener("auth:expired", handleAuthExpired);
+    return () => window.removeEventListener("auth:expired", handleAuthExpired);
+  }, [signOut, navigate, toast]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -217,6 +228,18 @@ const Admin = () => {
       fetchOrders();
     } catch (error) {
       toast({ variant: "destructive", title: "Erro ao atualizar pedido", description: error instanceof Error ? error.message : "Erro desconhecido" });
+    }
+  };
+
+  const notifyOrder = async (orderId: string) => {
+    setNotifying(true);
+    try {
+      await api.post(`/orders/${orderId}/notify`);
+      toast({ title: "Notificação enviada!", description: "WhatsApp enviado para o administrador." });
+    } catch (error) {
+      toast({ variant: "destructive", title: "Erro ao notificar", description: error instanceof Error ? error.message : "Erro desconhecido" });
+    } finally {
+      setNotifying(false);
     }
   };
 
@@ -996,6 +1019,10 @@ const Admin = () => {
                       </div>
                     </div>
                     {selectedOrder.shipped_at && <p className="text-xs text-muted-foreground">Enviado em {new Date(selectedOrder.shipped_at).toLocaleDateString("pt-BR")}</p>}
+                    <Button onClick={() => notifyOrder(selectedOrder.id)} disabled={notifying} variant="outline" className="w-full h-11 font-bold uppercase border-green-500/30 text-green-500 hover:bg-green-500/10">
+                      <MessageCircle size={16} className="mr-2" />
+                      {notifying ? "Enviando..." : "Notificar WhatsApp"}
+                    </Button>
                     <Button onClick={handleSaveTracking} className="w-full h-11 bg-primary font-bold uppercase"><Check size={16} className="mr-2" />Salvar alterações</Button>
                   </div>
                 </div>

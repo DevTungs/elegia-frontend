@@ -32,13 +32,15 @@ export const useAuth = () => {
         removeToken();
       }
     } catch {
-      // Fallback: se a API falhar (offline, CORS, etc.), decodifica localmente
-      const userData = getUser();
-      if (userData) {
-        setUser(userData);
-        setIsAdmin(checkAdmin());
-      } else {
-        removeToken();
+      const token = getToken();
+      if (token) {
+        const userData = getUser();
+        if (userData) {
+          setUser(userData);
+          setIsAdmin(checkAdmin());
+        } else {
+          removeToken();
+        }
       }
     } finally {
       setLoading(false);
