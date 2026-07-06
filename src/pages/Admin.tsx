@@ -953,7 +953,7 @@ const Admin = () => {
                       className="ml-auto font-bold uppercase border-green-500/30 text-green-500 hover:bg-green-500/10"
                     >
                       <MessageCircle size={14} className="mr-1" />
-                      {notifying ? "Enviando..." : "Reenviar notificação de confirmação"}
+                      {notifying ? "Enviando..." : "🔔 Notificar admins (WhatsApp)"}
                     </Button>
                   </div>
 
