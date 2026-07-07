@@ -436,9 +436,6 @@ const Merch = () => {
                                 }`}
                               >
                                 {size}
-                                <span className="ml-1 text-[10px] opacity-70">
-                                  ({sizeStock})
-                                </span>
                               </Button>
                             );
                           })}

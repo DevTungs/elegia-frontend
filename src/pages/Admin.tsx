@@ -150,6 +150,7 @@ const Admin = () => {
   });
   const [uploadingImages, setUploadingImages] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [customSize, setCustomSize] = useState("");
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
@@ -412,11 +413,7 @@ const Admin = () => {
     e.preventDefault();
     setLoadingProducts(true);
 
-    const sizesArray = productForm.sizes
-      .split(",")
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-
+    const sizesArray = productForm.sizes;
     const stockObj: Record<string, number> = {};
     if (sizesArray.length > 0) {
       for (const size of sizesArray) {
@@ -474,7 +471,7 @@ const Admin = () => {
       price: product.price.toString(),
       shipping_cost: (product.shipping_cost ?? 0).toString(),
       category: product.category,
-      sizes: product.sizes?.join(", ") || "",
+      sizes: product.sizes || [],
       colors: (product.colors as { name: string; hex: string }[]) || [],
       stock: stockRecord,
       totalStock: product.total_stock || 0,
@@ -507,7 +504,7 @@ const Admin = () => {
       price: "",
       shipping_cost: "",
       category: "tshirts",
-      sizes: "",
+      sizes: [] as string[],
       colors: [],
       stock: {},
       totalStock: 0,
@@ -516,6 +513,20 @@ const Admin = () => {
     });
     setEditingProduct(null);
     setIsEditingProduct(false);
+  };
+
+  const addCustomSize = () => {
+    const trimmed = customSize.trim().toUpperCase();
+    if (!trimmed) return;
+    setProductForm((prev) => {
+      if (prev.sizes.includes(trimmed)) return prev;
+      return {
+        ...prev,
+        sizes: [...prev.sizes, trimmed],
+        stock: { ...prev.stock, [trimmed]: "0" },
+      };
+    });
+    setCustomSize("");
   };
 
   const handleSignOut = async () => {
@@ -845,22 +856,62 @@ const Admin = () => {
                           <p className="text-xs text-muted-foreground">PNG, JPEG ou WebP. Até 5MB por imagem.</p>
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="product-sizes">Tamanhos (separados por vírgula)</Label>
-                          <Input id="product-sizes" value={productForm.sizes} onChange={(e) => {
-                            const newSizes = e.target.value;
-                            setProductForm((prev) => {
-                              const oldSizes = prev.sizes.split(",").map((s) => s.trim()).filter(Boolean);
-                              const newSizesArr = newSizes.split(",").map((s) => s.trim()).filter(Boolean);
-                              const stock = { ...prev.stock };
-                              for (const size of oldSizes) {
-                                if (!newSizesArr.includes(size)) delete stock[size];
-                              }
-                              for (const size of newSizesArr) {
-                                if (!(size in stock)) stock[size] = "0";
-                              }
-                              return { ...prev, sizes: newSizes, stock };
-                            });
-                          }} className="bg-background border-white/[0.08]" placeholder="P, M, G, GG, XG" />
+                          <Label>Variações de Tamanho</Label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {["P", "M", "G", "GG", "XG", "XGG"].map((size) => {
+                              const isSelected = productForm.sizes.includes(size);
+                              return (
+                                <button
+                                  key={size}
+                                  type="button"
+                                  onClick={() => {
+                                    setProductForm((prev) => {
+                                      const newSizes = isSelected
+                                        ? prev.sizes.filter((s) => s !== size)
+                                        : [...prev.sizes, size];
+                                      const stock = { ...prev.stock };
+                                      if (isSelected) {
+                                        delete stock[size];
+                                      } else if (!(size in stock)) {
+                                        stock[size] = "0";
+                                      }
+                                      return { ...prev, sizes: newSizes, stock };
+                                    });
+                                  }}
+                                  className={cn(
+                                    "px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded-md border transition-colors",
+                                    isSelected
+                                      ? "bg-primary text-primary-foreground border-primary"
+                                      : "bg-background text-muted-foreground border-white/[0.08] hover:border-white/20"
+                                  )}
+                                >
+                                  {size}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          <div className="flex gap-2">
+                            <Input
+                              placeholder="Outro tamanho..."
+                              className="bg-background border-white/[0.08] flex-1"
+                              value={customSize}
+                              onChange={(e) => setCustomSize(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  addCustomSize();
+                                }
+                              }}
+                            />
+                            <Button type="button" variant="outline" size="sm" onClick={addCustomSize}>
+                              <Plus size={14} className="mr-1" />Adicionar
+                            </Button>
+                          </div>
+                          {productForm.sizes.length > 0 && (
+                            <p className="text-xs text-muted-foreground">
+                              {productForm.sizes.length} {productForm.sizes.length === 1 ? "variação" : "variações"} selecionada{productForm.sizes.length !== 1 ? "s" : ""}
+                            </p>
+                          )}
                         </div>
                         <div className="space-y-2">
                           <Label>Cores</Label>
