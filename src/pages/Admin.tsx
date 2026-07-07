@@ -771,36 +771,54 @@ const Admin = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label>Estoque por Tamanho</Label>
-                            <div className="space-y-2">
-                              {(() => {
-                                const sizes = Array.isArray(productForm.sizes) ? productForm.sizes : [];
-                                const keys = sizes.length > 0 ? sizes : ["default"];
-                                return keys.map((size) => (
-                                  <div key={size} className="flex items-center gap-2">
-                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground w-8 text-right">
-                                      {size}
-                                    </span>
-                                    <Input
-                                      type="number"
-                                      min="0"
-                                      value={productForm.stock[size] ?? ""}
-                                      onChange={(e) =>
-                                        setProductForm({
-                                          ...productForm,
-                                          stock: {
-                                            ...productForm.stock,
-                                            [size]: e.target.value,
-                                          },
-                                        })
-                                      }
-                                      className="bg-background border-white/[0.08] flex-1"
-                                      placeholder="0"
-                                    />
-                                  </div>
-                                ));
-                              })()}
-                            </div>
+                            <Label>{Array.isArray(productForm.sizes) && productForm.sizes.length > 0 ? "Estoque por Tamanho" : "Estoque"}</Label>
+                            {(() => {
+                              const sizes = Array.isArray(productForm.sizes) ? productForm.sizes : [];
+                              if (sizes.length === 0) {
+                                return (
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    value={productForm.stock["default"] ?? ""}
+                                    onChange={(e) =>
+                                      setProductForm({
+                                        ...productForm,
+                                        stock: { default: e.target.value },
+                                      })
+                                    }
+                                    className="bg-background border-white/[0.08]"
+                                    placeholder="0"
+                                  />
+                                );
+                              }
+                              return (
+                                <div className="space-y-2">
+                                  {sizes.map((size) => (
+                                    <div key={size} className="flex items-center gap-2">
+                                      <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground w-8 text-right">
+                                        {size}
+                                      </span>
+                                      <Input
+                                        type="number"
+                                        min="0"
+                                        value={productForm.stock[size] ?? ""}
+                                        onChange={(e) =>
+                                          setProductForm({
+                                            ...productForm,
+                                            stock: {
+                                              ...productForm.stock,
+                                              [size]: e.target.value,
+                                            },
+                                          })
+                                        }
+                                        className="bg-background border-white/[0.08] flex-1"
+                                        placeholder="0"
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                             {Object.values(productForm.stock).length > 0 && (
                               <p className="text-xs text-muted-foreground mt-1">
                                 Total:{" "}
