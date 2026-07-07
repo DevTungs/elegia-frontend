@@ -774,10 +774,7 @@ const Admin = () => {
                             <Label>Estoque por Tamanho</Label>
                             <div className="space-y-2">
                               {(() => {
-                                const sizes = productForm.sizes
-                                  .split(",")
-                                  .map((s) => s.trim())
-                                  .filter((s) => s.length > 0);
+                                const sizes = Array.isArray(productForm.sizes) ? productForm.sizes : [];
                                 const keys = sizes.length > 0 ? sizes : ["default"];
                                 return keys.map((size) => (
                                   <div key={size} className="flex items-center gap-2">
