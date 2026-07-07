@@ -28,6 +28,9 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 
+const getTotalStock = (stock: Record<string, number>): number =>
+  Object.values(stock || {}).reduce((sum, v) => sum + (Number(v) || 0), 0);
+
 const Merch = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -88,6 +91,13 @@ const Merch = () => {
 
   const handleAddToCart = () => {
     if (!selectedProduct) return;
+    const stock = selectedProduct.stock as Record<string, number>;
+    const sizeKey = selectedSize || "default";
+    const available = stock?.[sizeKey] ?? 0;
+    if (available < quantity) {
+      toast.error(`Estoque insuficiente para o tamanho ${selectedSize}. Disponível: ${available}`);
+      return;
+    }
     addToCart(selectedProduct, quantity, selectedSize || undefined, selectedColor || undefined);
     toast.success(`${selectedProduct.name} adicionado ao carrinho!`);
     setSelectedProduct(null);
@@ -257,7 +267,7 @@ const Merch = () => {
                                 Ver Detalhes
                               </Button>
                             </div>
-                            {product.stock < 5 && (
+                            {(product.total_stock ?? getTotalStock(product.stock as Record<string, number>)) < 5 && (
                               <div className="absolute top-3 left-3 animate-pulse">
                                 <Badge variant="destructive" className="text-[11px] px-3 py-1">
                                   ⚡ Restam poucas unidades!
@@ -405,18 +415,33 @@ const Merch = () => {
                           Tamanho
                         </label>
                         <div className="flex flex-wrap gap-2">
-                          {selectedProduct.sizes.map((size) => (
-                            <Button
-                              key={size}
-                              type="button"
-                              variant={selectedSize === size ? "default" : "secondary"}
-                              size="sm"
-                              onClick={() => setSelectedSize(size)}
-                              className={selectedSize === size ? "bg-primary text-primary-foreground" : ""}
-                            >
-                              {size}
-                            </Button>
-                          ))}
+                          {selectedProduct.sizes.map((size) => {
+                            const stockMap = selectedProduct.stock as Record<string, number>;
+                            const sizeStock = stockMap?.[size] ?? 0;
+                            const isOut = sizeStock === 0;
+                            return (
+                              <Button
+                                key={size}
+                                type="button"
+                                variant={selectedSize === size ? "default" : "secondary"}
+                                size="sm"
+                                disabled={isOut}
+                                onClick={() => setSelectedSize(size)}
+                                className={`relative ${
+                                  selectedSize === size
+                                    ? "bg-primary text-primary-foreground"
+                                    : isOut
+                                      ? "opacity-30 cursor-not-allowed"
+                                      : ""
+                                }`}
+                              >
+                                {size}
+                                <span className="ml-1 text-[10px] opacity-70">
+                                  ({sizeStock})
+                                </span>
+                              </Button>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
@@ -454,20 +479,23 @@ const Merch = () => {
                       Adicionar ao Carrinho
                     </Button>
 
-                    {selectedProduct.stock < 5 ? (
-                      <div className="mt-3 p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-center animate-pulse">
-                        <p className="text-xs font-bold text-destructive">
-                          ⚡ Restam apenas {selectedProduct.stock} {selectedProduct.stock === 1 ? "unidade" : "unidades"}!
+                    {(() => {
+                      const total = selectedProduct.total_stock ?? getTotalStock(selectedProduct.stock as Record<string, number>);
+                      return total < 5 ? (
+                        <div className="mt-3 p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-center animate-pulse">
+                          <p className="text-xs font-bold text-destructive">
+                            ⚡ Restam apenas {total} {total === 1 ? "unidade" : "unidades"}!
+                          </p>
+                          <p className="text-[10px] text-destructive/70 mt-1">
+                            Garanta a sua antes que acabe
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-[10px] text-muted-foreground/50 text-center mt-3">
+                          {total} unidades disponíveis
                         </p>
-                        <p className="text-[10px] text-destructive/70 mt-1">
-                          Garanta a sua antes que acabe
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="text-[10px] text-muted-foreground/50 text-center mt-3">
-                        {selectedProduct.stock} unidades disponíveis
-                      </p>
-                    )}
+                      );
+                    })()}
                   </div>
                 </div>
               </ScrollArea>

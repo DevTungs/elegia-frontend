@@ -68,7 +68,8 @@ interface Product {
   category: string;
   sizes: string[];
   colors: { name: string; hex: string }[];
-  stock: number;
+  stock: Record<string, number>;
+  total_stock: number;
   featured: boolean;
   stripe_price_id?: string | null;
   stripe_product_id?: string | null;
@@ -142,7 +143,8 @@ const Admin = () => {
     category: "tshirts",
     sizes: "",
     colors: [] as { name: string; hex: string }[],
-    stock: "",
+    stock: {} as Record<string, string>,
+    totalStock: 0,
     featured: false,
     images: [] as { url: string; is_primary: boolean }[],
   });
@@ -415,6 +417,16 @@ const Admin = () => {
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
 
+    const stockObj: Record<string, number> = {};
+    if (sizesArray.length > 0) {
+      for (const size of sizesArray) {
+        stockObj[size] = parseInt(productForm.stock[size] || "0") || 0;
+      }
+    } else {
+      const val = productForm.stock["default"];
+      stockObj["default"] = parseInt(val || "0") || 0;
+    }
+
     const primaryImage = productForm.images.find((img) => img.is_primary);
     const productData = {
       name: productForm.name,
@@ -426,7 +438,7 @@ const Admin = () => {
       category: productForm.category,
       sizes: sizesArray,
       colors: productForm.colors,
-      stock: parseInt(productForm.stock) || 0,
+      stock: stockObj,
       featured: productForm.featured,
     };
 
@@ -449,6 +461,13 @@ const Admin = () => {
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
+    const stockData = product.stock as Record<string, number> | undefined;
+    const stockRecord: Record<string, string> = {};
+    if (stockData && typeof stockData === "object" && !Array.isArray(stockData)) {
+      for (const [key, val] of Object.entries(stockData)) {
+        stockRecord[key] = String(val);
+      }
+    }
     setProductForm({
       name: product.name,
       description: product.description,
@@ -457,7 +476,8 @@ const Admin = () => {
       category: product.category,
       sizes: product.sizes?.join(", ") || "",
       colors: (product.colors as { name: string; hex: string }[]) || [],
-      stock: product.stock.toString(),
+      stock: stockRecord,
+      totalStock: product.total_stock || 0,
       featured: product.featured,
       images: (product.images as { url: string; is_primary: boolean }[])?.length > 0
         ? (product.images as { url: string; is_primary: boolean }[])
@@ -489,7 +509,8 @@ const Admin = () => {
       category: "tshirts",
       sizes: "",
       colors: [],
-      stock: "",
+      stock: {},
+      totalStock: 0,
       featured: false,
       images: [],
     });
@@ -739,8 +760,49 @@ const Admin = () => {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
-                            <Label htmlFor="product-stock">Estoque *</Label>
-                            <Input id="product-stock" type="number" value={productForm.stock} onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })} required className="bg-background border-white/[0.08]" placeholder="50" />
+                            <Label>Estoque por Tamanho</Label>
+                            <div className="space-y-2">
+                              {(() => {
+                                const sizes = productForm.sizes
+                                  .split(",")
+                                  .map((s) => s.trim())
+                                  .filter((s) => s.length > 0);
+                                const keys = sizes.length > 0 ? sizes : ["default"];
+                                return keys.map((size) => (
+                                  <div key={size} className="flex items-center gap-2">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground w-8 text-right">
+                                      {size}
+                                    </span>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      value={productForm.stock[size] ?? ""}
+                                      onChange={(e) =>
+                                        setProductForm({
+                                          ...productForm,
+                                          stock: {
+                                            ...productForm.stock,
+                                            [size]: e.target.value,
+                                          },
+                                        })
+                                      }
+                                      className="bg-background border-white/[0.08] flex-1"
+                                      placeholder="0"
+                                    />
+                                  </div>
+                                ));
+                              })()}
+                            </div>
+                            {Object.values(productForm.stock).length > 0 && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Total:{" "}
+                                {Object.values(productForm.stock).reduce(
+                                  (sum, v) => sum + (parseInt(v || "0") || 0),
+                                  0
+                                )}{" "}
+                                unidades
+                              </p>
+                            )}
                           </div>
                           <div className="space-y-2">
                             <Label htmlFor="product-category">Categoria *</Label>
@@ -784,7 +846,21 @@ const Admin = () => {
                         </div>
                         <div className="space-y-2">
                           <Label htmlFor="product-sizes">Tamanhos (separados por vírgula)</Label>
-                          <Input id="product-sizes" value={productForm.sizes} onChange={(e) => setProductForm({ ...productForm, sizes: e.target.value })} className="bg-background border-white/[0.08]" placeholder="P, M, G, GG, XG" />
+                          <Input id="product-sizes" value={productForm.sizes} onChange={(e) => {
+                            const newSizes = e.target.value;
+                            setProductForm((prev) => {
+                              const oldSizes = prev.sizes.split(",").map((s) => s.trim()).filter(Boolean);
+                              const newSizesArr = newSizes.split(",").map((s) => s.trim()).filter(Boolean);
+                              const stock = { ...prev.stock };
+                              for (const size of oldSizes) {
+                                if (!newSizesArr.includes(size)) delete stock[size];
+                              }
+                              for (const size of newSizesArr) {
+                                if (!(size in stock)) stock[size] = "0";
+                              }
+                              return { ...prev, sizes: newSizes, stock };
+                            });
+                          }} className="bg-background border-white/[0.08]" placeholder="P, M, G, GG, XG" />
                         </div>
                         <div className="space-y-2">
                           <Label>Cores</Label>
@@ -837,7 +913,7 @@ const Admin = () => {
                                     <div className="space-y-1 text-sm text-muted-foreground mb-3">
                                       <div className="flex items-center gap-2"><DollarSign size={14} /><span>R$ {product.price.toFixed(2)}</span></div>
                                       <div className="flex items-center gap-2"><Truck size={14} /><span>{product.shipping_cost > 0 ? `Frete: R$ ${product.shipping_cost.toFixed(2)}` : "Frete: A combinar"}</span></div>
-                                      <div className="flex items-center gap-2"><Layers size={14} /><span>Estoque: {product.stock}</span></div>
+                                      <div className="flex items-center gap-2"><Layers size={14} /><span>Estoque: {product.total_stock ?? Object.values(product.stock as Record<string, number>).reduce((a, b) => a + b, 0)}</span></div>
                                       <div className="flex items-center gap-2"><Tag size={14} /><span>{CATEGORY_OPTIONS.find((c) => c.value === product.category)?.label}</span></div>
                                     </div>
                                     <div className="flex gap-2">

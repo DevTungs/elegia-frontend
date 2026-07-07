@@ -11,7 +11,8 @@ export type Product = {
   category: string;
   sizes: string[];
   colors: ProductColor[];
-  stock: number;
+  stock: Record<string, number>;
+  total_stock?: number;
   featured: boolean;
   created_at?: string;
   updated_at?: string;
