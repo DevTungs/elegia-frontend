@@ -28,6 +28,8 @@ import {
   Search,
   ClipboardList,
   MessageCircle,
+  Smartphone,
+  RefreshCw,
 } from "lucide-react";
 import PageShell from "@/components/PageShell";
 import AnimatedSection from "@/components/AnimatedSection";
@@ -45,7 +47,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-type Tab = "events" | "products" | "orders";
+type Tab = "events" | "products" | "orders" | "whatsapp";
 
 interface Event {
   id: string;
@@ -160,6 +162,11 @@ const Admin = () => {
   const [trackingForm, setTrackingForm] = useState({ code: "", status: "" });
   const [notifying, setNotifying] = useState(false);
 
+  const [whatsappStatus, setWhatsappStatus] = useState<{ connected: boolean; state: string; groupName?: string }>({ connected: false, state: "close" });
+  const [whatsappQr, setWhatsappQr] = useState<string | null>(null);
+  const [loadingWhatsapp, setLoadingWhatsapp] = useState(true);
+  const [reconnecting, setReconnecting] = useState(false);
+
   useEffect(() => {
     const handleAuthExpired = () => {
       signOut();
@@ -216,13 +223,36 @@ const Admin = () => {
     }
   }, [toast]);
 
+  const fetchWhatsappStatus = useCallback(async () => {
+    try {
+      const status = await api.get<{ connected: boolean; state: string; groupName?: string }>("/whatsapp/status");
+      setWhatsappStatus(status);
+
+      if (!status.connected) {
+        const qrData = await api.get<{ connected: boolean; qr: string | null }>("/whatsapp/qr");
+        if (!qrData.connected && qrData.qr) {
+          setWhatsappQr(qrData.qr);
+        } else {
+          setWhatsappQr(null);
+        }
+      } else {
+        setWhatsappQr(null);
+      }
+    } catch (error) {
+      console.error("Erro ao verificar WhatsApp:", error);
+    } finally {
+      setLoadingWhatsapp(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (user && isAdmin) {
       fetchEvents();
       fetchProducts();
       fetchOrders();
+      fetchWhatsappStatus();
     }
-  }, [user, isAdmin, fetchEvents, fetchProducts, fetchOrders]);
+  }, [user, isAdmin, fetchEvents, fetchProducts, fetchOrders, fetchWhatsappStatus]);
 
   const updateOrder = async (orderId: string, updates: Partial<Order>) => {
     try {
@@ -265,6 +295,19 @@ const Admin = () => {
       code: order.tracking_code || "",
       status: order.status,
     });
+  };
+
+  const reconnectWhatsApp = async () => {
+    setReconnecting(true);
+    try {
+      await api.post("/whatsapp/reconnect");
+      toast({ title: "Reconectando...", description: "Aguarde o QR Code ser gerado." });
+      setTimeout(fetchWhatsappStatus, 3000);
+    } catch (error) {
+      toast({ variant: "destructive", title: "Erro ao reconectar", description: error instanceof Error ? error.message : "Erro desconhecido" });
+    } finally {
+      setReconnecting(false);
+    }
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
@@ -637,6 +680,11 @@ const Admin = () => {
                 <TabsTrigger value="orders" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                   <ShoppingCart size={16} />
                   Pedidos ({orders.length})
+                </TabsTrigger>
+                <TabsTrigger value="whatsapp" className="gap-2 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                  <Smartphone size={16} />
+                  WhatsApp
+                  <span className={`ml-1 w-2 h-2 rounded-full ${whatsappStatus.connected ? 'bg-green-500' : 'bg-red-500'}`} />
                 </TabsTrigger>
               </TabsList>
             </AnimatedSection>
@@ -1061,6 +1109,96 @@ const Admin = () => {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </AnimatedSection>
+            </TabsContent>
+
+            <TabsContent value="whatsapp" className="mt-0">
+              <AnimatedSection animation="fade-up" delay={2}>
+                <Card className="surface-elevated border-white/[0.06]">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-bold uppercase tracking-tight flex items-center gap-2">
+                      <Smartphone size={20} />
+                      WhatsApp - Notificações
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {loadingWhatsapp ? (
+                      <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto mb-4" />
+                        <p className="text-muted-foreground">Verificando status...</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-6">
+                        <div className="flex items-center justify-between p-4 bg-secondary/50 rounded-lg">
+                          <div>
+                            <p className="font-bold">Status da Conexão</p>
+                            <p className="text-sm text-muted-foreground">
+                              Grupo: {whatsappStatus.groupName || "Elegia L.C"}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`w-3 h-3 rounded-full ${whatsappStatus.connected ? 'bg-green-500' : 'bg-red-500'}`} />
+                            <span className="font-bold" style={{ color: whatsappStatus.connected ? '#22c55e' : '#ef4444' }}>
+                              {whatsappStatus.connected ? "Conectado" : "Desconectado"}
+                            </span>
+                          </div>
+                        </div>
+
+                        {!whatsappStatus.connected && (
+                          <div className="text-center space-y-4">
+                            {whatsappQr ? (
+                              <>
+                                <p className="text-muted-foreground">Escaneie o QR Code abaixo com seu WhatsApp:</p>
+                                <div className="flex justify-center">
+                                  <img
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(whatsappQr)}`}
+                                    alt="QR Code WhatsApp"
+                                    className="border-4 border-white rounded-lg"
+                                  />
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  Abra o WhatsApp no celular → Configurações → Aparelhos conectados → Conectar aparelho
+                                </p>
+                              </>
+                            ) : (
+                              <p className="text-muted-foreground">Aguardando QR Code ser gerado...</p>
+                            )}
+                            <Button
+                              onClick={reconnectWhatsApp}
+                              disabled={reconnecting}
+                              variant="outline"
+                              className="gap-2"
+                            >
+                              <RefreshCw size={16} className={reconnecting ? "animate-spin" : ""} />
+                              {reconnecting ? "Reconectando..." : "Reconectar"}
+                            </Button>
+                          </div>
+                        )}
+
+                        {whatsappStatus.connected && (
+                          <div className="text-center space-y-4">
+                            <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                              <p className="text-green-500 font-bold">✓ WhatsApp conectado!</p>
+                              <p className="text-sm text-muted-foreground mt-2">
+                                As notificações de novos pedidos serão enviadas automaticamente para o grupo <strong>{whatsappStatus.groupName || "Elegia L.C"}</strong>.
+                              </p>
+                            </div>
+                            <Button
+                              onClick={reconnectWhatsApp}
+                              disabled={reconnecting}
+                              variant="outline"
+                              size="sm"
+                              className="gap-2"
+                            >
+                              <RefreshCw size={14} className={reconnecting ? "animate-spin" : ""} />
+                              Reconectar
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </CardContent>
