@@ -52,7 +52,7 @@ const About = () => {
 
         <div className="container relative z-10 mx-auto px-4">
           <AnimatedSection animation="fade-up">
-            <PageHeader eyebrow="Portfólio Artístico" title="Elegia L.C." />
+            <PageHeader eyebrow="Portfólio Artístico" />
           </AnimatedSection>
 
           <div className="max-w-4xl mx-auto">
