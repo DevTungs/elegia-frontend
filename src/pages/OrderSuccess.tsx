@@ -49,9 +49,6 @@ const OrderSuccess = () => {
       }
     }
 
-    let attempts = 0;
-    const maxAttempts = 60; // 5 minutes (5s * 60)
-
     const fetchOrder = async () => {
       try {
         const data = await api.get<Order>(`/orders/track/${orderId}`);
@@ -67,25 +64,29 @@ const OrderSuccess = () => {
 
     fetchOrder();
 
-    // Poll for payment status updates (Asaas webhook may take a few seconds)
-    const interval = setInterval(async () => {
-      attempts++;
-      if (attempts >= maxAttempts) {
-        clearInterval(interval);
-        return;
-      }
+    // Subscribe to SSE for real-time order status updates
+    const API_BASE = import.meta.env.VITE_API_URL || "/api";
+    const eventSource = new EventSource(`${API_BASE}/orders/track/${orderId}/sse`);
 
-      const updated = await api.get<Order>(`/orders/track/${orderId}`).catch(() => null);
-      if (updated) {
-        setOrder(updated);
-        if (updated.status === "received" || updated.status === "confirmed") {
-          clearInterval(interval);
-          toast.success("Pagamento confirmado!");
+    eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.status) {
+          setOrder((prev) => (prev ? { ...prev, ...data } : prev));
+          if (data.status === "received" || data.status === "confirmed") {
+            toast.success("Pagamento confirmado!");
+          }
         }
+      } catch {
+        // ignore malformed messages
       }
-    }, 5000);
+    };
 
-    return () => clearInterval(interval);
+    eventSource.onerror = () => {
+      eventSource.close();
+    };
+
+    return () => eventSource.close();
   }, [orderId]);
 
   // Prefer PIX data from the database (persistent), fallback to localStorage
