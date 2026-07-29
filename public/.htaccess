@@ -2,6 +2,9 @@
   RewriteEngine On
   RewriteBase /
 
+  # Rota /echooforigin - serve index.html para o SPA (antes da regra geral)
+  RewriteRule ^echooforigin/?$ /index.html [L]
+
   # Não redireciona se for um arquivo ou pasta real
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
