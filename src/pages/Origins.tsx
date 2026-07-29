@@ -25,7 +25,7 @@ const Origins = () => {
         const { latitude, longitude } = pos.coords;
 
         try {
-          const res = await fetch(`${API_BASE}/api/origins`, {
+          const res = await fetch(`${API_BASE}/origins`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ latitude, longitude }),
@@ -77,7 +77,7 @@ const Origins = () => {
           <div className="flex justify-center">
             <iframe
               style={{ borderRadius: "12px" }}
-              src="https://open.spotify.com/intl-pt/artist/2li90ydgYRoA5saOmkw0wR"
+              src="https://open.spotify.com/intl-pt/artist/2li90ydgYRoA5saOmkw0wR?si=ea1523a8c5194d25"
               width="100%"
               height="352"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
