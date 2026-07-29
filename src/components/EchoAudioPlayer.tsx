@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Pause, Play, Speaker, SpeakerOff } from "lucide-react";
+import { Pause, Play, Speaker, VolumeOff } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
 interface EchoAudioPlayerProps {
@@ -127,7 +127,7 @@ const EchoAudioPlayer = ({ src }: EchoAudioPlayerProps) => {
           onClick={toggleMute}
           aria-label={muted ? "Ativar som" : "Mutado"}
         >
-          {muted ? <SpeakerOff className="h-3.5 w-3.5" /> : <Speaker className="h-3.5 w-3.5" />}
+          {muted ? <VolumeOff className="h-3.5 w-3.5" /> : <Speaker className="h-3.5 w-3.5" />}
         </button>
 
         <div className="lap-volume-wrap">
