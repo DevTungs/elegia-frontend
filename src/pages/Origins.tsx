@@ -1,8 +1,7 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import PageShell from "@/components/PageShell";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
-const SENT_KEY = "elegia-origin-sent";
 
 interface Status {
   type: "loading" | "success" | "error" | "idle";
@@ -11,51 +10,52 @@ interface Status {
 
 const Origins = () => {
   const [status, setStatus] = useState<Status>({ type: "idle", message: "" });
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (localStorage.getItem(SENT_KEY)) {
-      setStatus({ type: "success", message: "Voce ja foi registrado! Obrigado por nos visitar." });
-      return;
-    }
-
-    if (!navigator.geolocation) {
-      setStatus({ type: "error", message: "Geolocalizacao nao e suportada pelo seu navegador." });
-      return;
-    }
-
-    setStatus({ type: "loading", message: "Obtendo sua localizacao..." });
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
-
-        try {
-          const res = await fetch(`${API_BASE}/origins`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ latitude, longitude }),
-          });
-
-          if (!res.ok) throw new Error("Erro ao registrar");
-          localStorage.setItem(SENT_KEY, "true");
-
-          setStatus({
-            type: "success",
-            message: "Obrigado por nos visitar! Sua localizacao foi registrada.",
-          });
-        } catch {
-          setStatus({ type: "error", message: "Erro ao enviar sua localizacao. Tente novamente." });
-        }
-      },
-      (err) => {
-        console.log(err);
-        setStatus({ type: "error", message: "Nao foi possivel obter sua localizacao. Permita o acesso a localizacao." });
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
+    timerRef.current = setTimeout(() => {
+      if (!navigator.geolocation) {
+        setStatus({ type: "error", message: "Geolocalizacao nao e suportada pelo seu navegador." });
+        return;
       }
-    );
+
+      setStatus({ type: "loading", message: "Obtendo sua localizacao..." });
+
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+
+          try {
+            const res = await fetch(`${API_BASE}/origins`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ latitude, longitude }),
+            });
+
+            if (!res.ok) throw new Error("Erro ao registrar");
+
+            setStatus({
+              type: "success",
+              message: "Obrigado por nos visitar! Sua localizacao foi registrada.",
+            });
+          } catch {
+            setStatus({ type: "error", message: "Erro ao enviar sua localizacao. Tente novamente." });
+          }
+        },
+        (err) => {
+          console.log(err);
+          setStatus({ type: "error", message: "Nao foi possivel obter sua localizacao. Permita o acesso a localizacao." });
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+        }
+      );
+    }, 30_000);
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, []);
 
   return (
