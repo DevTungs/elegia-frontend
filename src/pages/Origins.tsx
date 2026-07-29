@@ -2,25 +2,30 @@
 import PageShell from "@/components/PageShell";
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
+const SENT_KEY = "elegia-origin-sent";
 
 interface Status {
-  type: "loading" | "success" | "error";
+  type: "loading" | "success" | "error" | "idle";
   message: string;
 }
 
 const Origins = () => {
-  const [status, setStatus] = useState<Status>({
-    type: "loading",
-    message: "Obtendo sua localização...",
-  });
+  const [status, setStatus] = useState<Status>({ type: "idle", message: "" });
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setStatus({ type: "error", message: "Geolocalização não é suportada pelo seu navegador." });
+    if (localStorage.getItem(SENT_KEY)) {
+      setStatus({ type: "success", message: "Voce ja foi registrado! Obrigado por nos visitar." });
       return;
     }
 
-    const watchID = navigator.geolocation.watchPosition(
+    if (!navigator.geolocation) {
+      setStatus({ type: "error", message: "Geolocalizacao nao e suportada pelo seu navegador." });
+      return;
+    }
+
+    setStatus({ type: "loading", message: "Obtendo sua localizacao..." });
+
+    navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
 
@@ -32,26 +37,25 @@ const Origins = () => {
           });
 
           if (!res.ok) throw new Error("Erro ao registrar");
+          localStorage.setItem(SENT_KEY, "true");
 
           setStatus({
             type: "success",
-            message: `Obrigado por nos visitar! De onde você está foi registrado.`,
+            message: "Obrigado por nos visitar! Sua localizacao foi registrada.",
           });
         } catch {
-          setStatus({ type: "error", message: "Erro ao enviar sua localização. Tente novamente." });
+          setStatus({ type: "error", message: "Erro ao enviar sua localizacao. Tente novamente." });
         }
       },
       (err) => {
         console.log(err);
-        setStatus({ type: "error", message: "Não foi possível obter sua localização. Permita o acesso à localização." });
+        setStatus({ type: "error", message: "Nao foi possivel obter sua localizacao. Permita o acesso a localizacao." });
       },
       {
         enableHighAccuracy: true,
         timeout: 5000,
       }
     );
-
-    return () => navigator.geolocation.clearWatch(watchID);
   }, []);
 
   return (
@@ -71,13 +75,13 @@ const Origins = () => {
           </h1>
 
           <p className="text-lg text-muted-foreground">
-            De onde você está nos ouvindo?
+            De onde voce esta nos ouvindo?
           </p>
 
           <div className="flex justify-center">
             <iframe
               style={{ borderRadius: "12px" }}
-              src="https://open.spotify.com/intl-pt/artist/2li90ydgYRoA5saOmkw0wR?si=ea1523a8c5194d25"
+              src="https://open.spotify.com/embed/artist/2li90ydgYRoA5saOmkw0wR"
               width="100%"
               height="352"
               allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
