@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Archive, LockKeyhole, ScanSearch, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import EchoAudioPlayer from "@/components/EchoAudioPlayer";
 import OptimizedImage from "@/components/OptimizedImage";
 import "./EchoOfOrigin.css";
 
@@ -187,10 +188,7 @@ const EchoOfOrigin = () => {
                         <p className="mt-2 text-xs uppercase tracking-[0.14em] text-zinc-500">{track.details}</p>
                         <p className="mt-4 text-sm leading-relaxed text-zinc-400">{track.note}</p>
                         <div className="mt-auto pt-5">
-                          <audio controls preload="none" className="lost-audio w-full">
-                            <source src={track.src} type="audio/mpeg" />
-                            Seu navegador nao suporta audio.
-                          </audio>
+                          <EchoAudioPlayer src={track.src} />
                         </div>
                       </CardContent>
                     </Card>

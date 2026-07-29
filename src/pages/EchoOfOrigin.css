@@ -144,19 +144,92 @@
   filter: grayscale(0.25) contrast(1.05);
 }
 
-.lost-audio {
-  height: 36px;
+.lost-audio-player {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid hsl(0 0% 100% / 0.1);
   border-radius: 0.45rem;
-  opacity: 0.88;
+  background: hsl(0 0% 3% / 0.7);
 }
 
-.lost-audio::-webkit-media-controls-panel {
-  background: hsl(0 0% 12%);
+.lap-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-.lost-audio::-webkit-media-controls-current-time-display,
-.lost-audio::-webkit-media-controls-time-remaining-display {
-  color: hsl(0 0% 85%);
+.lap-play-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border: 1px solid hsl(0 0% 100% / 0.2);
+  border-radius: 0.35rem;
+  background: hsl(0 0% 10% / 0.6);
+  color: hsl(0 0% 88%);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.lap-play-btn:hover {
+  background: hsl(0 0% 20% / 0.7);
+}
+
+.lap-seek-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.lap-seek {
+  cursor: pointer;
+}
+
+.lap-time {
+  flex-shrink: 0;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: hsl(0 0% 60%);
+  min-width: 7.5ch;
+  text-align: right;
+  font-family: "Share Tech Mono", "Courier New", monospace;
+}
+
+.lap-bottom {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.lap-mute-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: hsl(0 0% 60%);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.lap-mute-btn:hover {
+  color: hsl(0 0% 88%);
+}
+
+.lap-volume-wrap {
+  flex: 1;
+  max-width: 7rem;
+}
+
+.lap-volume {
+  cursor: pointer;
 }
 
 .lost-reveal {
