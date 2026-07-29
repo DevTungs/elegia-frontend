@@ -15,6 +15,7 @@ import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import EchoOfOrigin from "./pages/EchoOfOrigin";
 import MyOrders from "./pages/MyOrders";
+import Origins from "./pages/Origins";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +33,7 @@ const App = () => (
             <Route path="/merch/success" element={<OrderSuccess />} />
             <Route path="/meus-pedidos" element={<MyOrders />} />
             <Route path="/sobre" element={<About />} />
+            <Route path="/origins" element={<Origins />} />
             <Route path="/echooforigin" element={<EchoOfOrigin />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<Admin />} />
