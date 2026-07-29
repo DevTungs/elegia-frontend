@@ -1,13 +1,9 @@
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Archive, LockKeyhole, ScanSearch, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import OptimizedImage from "@/components/OptimizedImage";
 import "./EchoOfOrigin.css";
-
-const ACCESS_PASSWORD = "echooforigin";
-const ACCESS_STORAGE_KEY = "echoes-origin-access";
 
 type AccessPhase = "locked" | "decrypting" | "unlocked";
 
@@ -34,17 +30,10 @@ const draftTracks = [
 
 const EchoOfOrigin = () => {
   const [phase, setPhase] = useState<AccessPhase>("locked");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [isRevealed, setIsRevealed] = useState(false);
 
   useEffect(() => {
     document.title = "Echo Of Origin | Elegia L.C";
-
-    const hasAccess = window.sessionStorage.getItem(ACCESS_STORAGE_KEY) === "granted";
-    if (hasAccess) {
-      setPhase("unlocked");
-    }
   }, []);
 
   useEffect(() => {
@@ -58,61 +47,37 @@ const EchoOfOrigin = () => {
   }, [phase]);
 
   useEffect(() => {
-    if (phase !== "decrypting") {
-      return;
-    }
+    if (phase !== "decrypting") return;
 
-    const unlockTimer = window.setTimeout(() => {
+    const timer = window.setTimeout(() => {
       setPhase("unlocked");
-      setPassword("");
-      setError("");
-    }, 2100);
+    }, 4000);
 
-    return () => window.clearTimeout(unlockTimer);
+    return () => window.clearTimeout(timer);
   }, [phase]);
 
   const statusMessage = useMemo(() => {
     if (phase === "decrypting") {
       return "Descriptografando indices e reconstruindo metadados corrompidos...";
     }
-
     if (phase === "unlocked") {
       return "Arquivo recuperado liberado. Manuseie com cuidado.";
     }
-
     return "Acesso privado necessario para abrir este arquivo.";
   }, [phase]);
 
   const statusLabel = useMemo(() => {
-    if (phase === "decrypting") {
-      return "DESCRIPTOGRAFANDO";
-    }
-
-    if (phase === "unlocked") {
-      return "LIBERADO";
-    }
-
+    if (phase === "decrypting") return "DESBLOQUEANDO";
+    if (phase === "unlocked") return "LIBERADO";
     return "BLOQUEADO";
   }, [phase]);
 
-  const handleUnlock = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    if (password.trim().toLowerCase() === ACCESS_PASSWORD) {
-      window.sessionStorage.setItem(ACCESS_STORAGE_KEY, "granted");
-      setPhase("decrypting");
-      setError("");
-      return;
-    }
-
-    setError("Senha incorreta. Acesso negado.");
+  const handleUnlock = () => {
+    setPhase("decrypting");
   };
 
   const handleLock = () => {
-    window.sessionStorage.removeItem(ACCESS_STORAGE_KEY);
     setPhase("locked");
-    setPassword("");
-    setError("");
   };
 
   return (
@@ -120,6 +85,8 @@ const EchoOfOrigin = () => {
       <div className="lost-noise" />
       <div className="lost-scanlines" />
       <div className={`lost-boot-flash ${phase === "decrypting" ? "is-active" : ""}`} />
+      <div className={`lost-glitch-overlay ${phase === "decrypting" ? "is-active" : ""}`} />
+      <div className={`lost-scan-bar ${phase === "decrypting" ? "is-active" : ""}`} />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col justify-center px-5 py-12 md:px-10 md:py-16">
         <header className="mb-8 grid gap-4 text-[11px] uppercase tracking-[0.28em] text-zinc-300 md:grid-cols-2">
@@ -131,16 +98,18 @@ const EchoOfOrigin = () => {
           <div className="lost-panel md:ml-auto md:text-right">
             <p>RECUPERADO DE</p>
             <p>SESSAO FALHA</p>
-            <p>STATUS: {statusLabel}</p>
+            <p>STATUS: <span className={`lost-status-label ${phase === "decrypting" ? "lost-status-glitch" : ""}`}>{statusLabel}</span></p>
           </div>
         </header>
 
-        <Card className="lost-shell rounded-2xl border-white/[0.08] bg-zinc-950/80 backdrop-blur-sm">
+        <Card className={`lost-shell rounded-2xl border-white/[0.08] bg-zinc-950/80 backdrop-blur-sm ${phase === "decrypting" ? "lost-shell-glitch" : ""}`}>
           <CardContent className="p-5 md:p-9">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.3em] text-zinc-400">cofre secreto</p>
-                <h1 className="lost-title mt-2 text-4xl uppercase text-zinc-100 md:text-6xl">Echo of Origin</h1>
+                <h1 className={`lost-title mt-2 text-4xl uppercase text-zinc-100 md:text-6xl ${phase === "decrypting" ? "lost-title-glitch" : ""}`}>
+                  Echo of Origin
+                </h1>
                 <p className="mt-2 text-sm uppercase tracking-[0.26em] text-zinc-500">as primeiras versoes</p>
               </div>
               <Archive className="mt-1 h-5 w-5 text-zinc-400" />
@@ -149,51 +118,37 @@ const EchoOfOrigin = () => {
             <p className="mt-5 max-w-3xl text-sm uppercase tracking-[0.14em] text-zinc-400">{statusMessage}</p>
 
             {phase === "locked" ? (
-              <form onSubmit={handleUnlock} className="mt-8 max-w-2xl space-y-4">
-                <label htmlFor="ep-password" className="text-xs uppercase tracking-[0.2em] text-zinc-300">
-                  Digite a senha para recuperar os arquivos perdidos
-                </label>
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Input
-                    id="ep-password"
-                    type="password"
-                    autoComplete="off"
-                    value={password}
-                    onChange={(event) => {
-                      setPassword(event.target.value);
-                      if (error) {
-                        setError("");
-                      }
-                    }}
-                    className="lost-input h-11 w-full"
-                    placeholder="password"
-                    required
-                  />
-                  <Button type="submit" className="lost-button h-11 px-6 text-xs uppercase tracking-[0.2em]">
-                    <Unlock className="h-4 w-4" />
-                    Desbloquear
-                  </Button>
-                </div>
-                {error ? (
-                  <p aria-live="polite" className="text-xs uppercase tracking-[0.18em] text-red-300">
-                    {error}
-                  </p>
-                ) : null}
-              </form>
+              <div className="mt-8">
+                <Button onClick={handleUnlock} className="lost-button h-12 px-8 text-xs uppercase tracking-[0.2em]">
+                  <Unlock className="h-4 w-4" />
+                  Desbloquear arquivo
+                </Button>
+              </div>
             ) : null}
 
             {phase === "decrypting" ? (
               <div className="lost-loader mt-10 rounded-xl p-5 md:p-7">
                 <div className="mb-4 flex items-center gap-3 text-zinc-200">
-                  <ScanSearch className="h-4 w-4" />
-                  <p className="text-xs uppercase tracking-[0.24em]">Escaneando sessoes corrompidas</p>
+                  <ScanSearch className="h-4 w-4 lost-spin" />
+                  <p className="text-xs uppercase tracking-[0.24em]">Desbloqueando sistema</p>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full bg-zinc-900/80">
                   <div className="decrypt-progress h-full w-1/2" />
                 </div>
-                <p className="mt-3 text-xs uppercase tracking-[0.16em] text-zinc-400">
-                  reconstruindo indice... sincronizando stems... restaurando assinaturas...
-                </p>
+                <div className="mt-4 space-y-1">
+                  <p className="lost-terminal-text text-xs uppercase tracking-[0.16em] text-zinc-400">
+                    reconstruindo indice...
+                  </p>
+                  <p className="lost-terminal-text lost-term-delay-1 text-xs uppercase tracking-[0.16em] text-zinc-400">
+                    sincronizando stems...
+                  </p>
+                  <p className="lost-terminal-text lost-term-delay-2 text-xs uppercase tracking-[0.16em] text-zinc-400">
+                    restaurando assinaturas...
+                  </p>
+                  <p className="lost-terminal-text lost-term-delay-3 text-xs uppercase tracking-[0.16em] text-green-400">
+                    liberando acesso...
+                  </p>
+                </div>
               </div>
             ) : null}
 
