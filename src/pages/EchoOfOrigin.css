@@ -232,6 +232,31 @@
   cursor: pointer;
 }
 
+.lost-download-btn {
+  border: 1px solid hsl(0 0% 100% / 0.12);
+  border-radius: 0.35rem;
+  background: hsl(0 0% 8% / 0.5);
+  color: hsl(0 0% 65%);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.lost-download-btn:hover {
+  background: hsl(0 0% 15% / 0.6);
+  color: hsl(0 0% 90%);
+  border-color: hsl(0 0% 100% / 0.25);
+}
+
+.lost-download-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lost-dl-count {
+  color: hsl(0 0% 50%);
+  font-family: "Share Tech Mono", "Courier New", monospace;
+}
+
 .lost-reveal {
   transform: translateY(16px);
   opacity: 0;

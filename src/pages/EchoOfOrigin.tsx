@@ -1,27 +1,31 @@
-import { useEffect, useMemo, useState } from "react";
-import { Archive, LockKeyhole, ScanSearch, Unlock } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Archive, Download, LockKeyhole, ScanSearch, Unlock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import EchoAudioPlayer from "@/components/EchoAudioPlayer";
 import OptimizedImage from "@/components/OptimizedImage";
+import { api } from "@/services/api";
 import "./EchoOfOrigin.css";
 
 type AccessPhase = "locked" | "decrypting" | "unlocked";
 
 const draftTracks = [
   {
+    trackId: "01_Cinco_Anos_demo_final",
     file: "01_Cinco_Anos_demo_final.mp3",
     details: "Gravado em 2014 | captura demo original",
     note: "Versao encontrada antes dos ajustes finais de arranjo e mudança de nome.",
     src: "/echooforigin/01_Cinco_Anos_demo_final.mp3",
   },
   {
+    trackId: "02_Minha_Vida_Em_Jogo",
     file: "02_Minha_Vida_Em_Jogo.mp3",
     details: "Recuperado de old tape | qualidade ruidosa",
     note: "Contem os primeiros vocais iniciais e cortes ritmicos ainda brutos.",
     src: "/echooforigin/02_Minha_Vida_Em_Jogo.mp3",
   },
   {
+    trackId: "03_Tarde_Demais_final_take",
     file: "03_Tarde_Demais_final_take.mp3",
     details: "Transferencia de arquivo | conversao de fita",
     note: "Take final antigo antes de qualquer processo moderno de mix, master ou até estruturação.",
@@ -32,6 +36,8 @@ const draftTracks = [
 const EchoOfOrigin = () => {
   const [phase, setPhase] = useState<AccessPhase>("locked");
   const [isRevealed, setIsRevealed] = useState(false);
+  const [downloadStats, setDownloadStats] = useState<Record<string, number>>({});
+  const [downloading, setDownloading] = useState<string | null>(null);
 
   useEffect(() => {
     document.title = "Echo Of Origin | Elegia L.C";
@@ -46,6 +52,33 @@ const EchoOfOrigin = () => {
     const frame = window.requestAnimationFrame(() => setIsRevealed(true));
     return () => window.cancelAnimationFrame(frame);
   }, [phase]);
+
+  useEffect(() => {
+    if (phase !== "unlocked") return;
+    api.get<Record<string, number>>("/echooforigin/stats")
+      .then(setDownloadStats)
+      .catch(() => {});
+  }, [phase]);
+
+  const handleDownload = useCallback(async (trackId: string) => {
+    setDownloading(trackId);
+    try {
+      const result = await api.post<{ trackId: string; count: number }>(`/echooforigin/download/${trackId}`, {});
+      setDownloadStats(prev => ({ ...prev, [trackId]: result.count }));
+    } catch {
+      // fallback: just download without counting
+    }
+    const track = draftTracks.find(t => t.trackId === trackId);
+    if (track) {
+      const a = document.createElement("a");
+      a.href = track.src;
+      a.download = track.file;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    setDownloading(null);
+  }, []);
 
   useEffect(() => {
     if (phase !== "decrypting") return;
@@ -187,8 +220,18 @@ const EchoOfOrigin = () => {
                         </h2>
                         <p className="mt-2 text-xs uppercase tracking-[0.14em] text-zinc-500">{track.details}</p>
                         <p className="mt-4 text-sm leading-relaxed text-zinc-400">{track.note}</p>
-                        <div className="mt-auto pt-5">
+                        <div className="mt-auto pt-5 space-y-3">
                           <EchoAudioPlayer src={track.src} />
+                          <button
+                            type="button"
+                            onClick={() => handleDownload(track.trackId)}
+                            disabled={downloading === track.trackId}
+                            className="lost-download-btn flex w-full items-center justify-center gap-2 py-2 text-[11px] uppercase tracking-[0.2em]"
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            {downloading === track.trackId ? "BAIXANDO..." : "BAIXAR"}
+                            <span className="lost-dl-count">({downloadStats[track.trackId] ?? 0})</span>
+                          </button>
                         </div>
                       </CardContent>
                     </Card>
