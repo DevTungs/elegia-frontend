@@ -21,6 +21,12 @@ const saveCart = (items: CartItem[]) => {
 const getItemKey = (productId: string, size?: string, color?: ProductColor) =>
   `${productId}-${size || "none"}-${color?.name || "none"}`;
 
+export const getStockFor = (product: Product, size?: string): number => {
+  const stock = product.stock as Record<string, number> | undefined;
+  const sizeKey = size || "default";
+  return stock?.[sizeKey] ?? 0;
+};
+
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>(loadCart);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -31,8 +37,17 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const addToCart = useCallback((product: Product, quantity = 1, size?: string, color?: ProductColor) => {
+    const available = getStockFor(product, size);
+    if (available <= 0) return false;
+
+    const key = getItemKey(product.id, size, color);
+    const existing = items.find(
+      (item) => getItemKey(item.product.id, item.selectedSize, item.selectedColor) === key
+    );
+    const inCart = existing?.quantity || 0;
+    if (inCart + quantity > available) return false;
+
     setItems((prev) => {
-      const key = getItemKey(product.id, size, color);
       const existingIndex = prev.findIndex(
         (item) => getItemKey(item.product.id, item.selectedSize, item.selectedColor) === key
       );
@@ -50,7 +65,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       return newItems;
     });
     setIsCartOpen(true);
-  }, []);
+    return true;
+  }, [items]);
 
   const removeFromCart = useCallback((productId: string, size?: string, color?: ProductColor) => {
     setItems((prev) => {
@@ -70,11 +86,11 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     }
     setItems((prev) => {
       const key = getItemKey(productId, size, color);
-      const newItems = prev.map((item) =>
-        getItemKey(item.product.id, item.selectedSize, item.selectedColor) === key
-          ? { ...item, quantity }
-          : item
-      );
+      const newItems = prev.map((item) => {
+        if (getItemKey(item.product.id, item.selectedSize, item.selectedColor) !== key) return item;
+        const available = getStockFor(item.product, item.selectedSize);
+        return { ...item, quantity: Math.min(quantity, Math.max(available, 1)) };
+      });
       saveCart(newItems);
       return newItems;
     });

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { api } from "@/services/api";
 import { type Product, type ProductColor, CATEGORY_LABELS } from "@/types/merch";
-import { useCart } from "@/hooks/useCart";
+import { useCart, getStockFor } from "@/hooks/useCart";
 import PageShell from "@/components/PageShell";
 import PageHeader from "@/components/PageHeader";
 import AnimatedSection from "@/components/AnimatedSection";
@@ -41,7 +41,7 @@ const Merch = () => {
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [carouselApi, setCarouselApi] = useState<CarouselApi>(null);
-  const { addToCart } = useCart();
+  const { addToCart, items } = useCart();
 
   const getProductImages = (product: Product): { url: string; is_primary: boolean }[] => {
     const images = product.images as { url: string; is_primary: boolean }[] | undefined;
@@ -89,16 +89,34 @@ const Merch = () => {
     setSelectedImageIndex(0);
   };
 
+  const getInCartQuantity = (product: Product, size?: string, color?: ProductColor | null) => {
+    const sizeKey = size || "default";
+    return items.reduce((sum, item) => {
+      const matches =
+        item.product.id === product.id &&
+        (item.selectedSize || "default") === sizeKey &&
+        (item.selectedColor?.name || null) === (color?.name || null);
+      return matches ? sum + item.quantity : sum;
+    }, 0);
+  };
+
   const handleAddToCart = () => {
     if (!selectedProduct) return;
-    const stock = selectedProduct.stock as Record<string, number>;
     const sizeKey = selectedSize || "default";
-    const available = stock?.[sizeKey] ?? 0;
-    if (available < quantity) {
-      toast.error(`Estoque insuficiente para o tamanho ${selectedSize}. Disponível: ${available}`);
+    const available = getStockFor(selectedProduct, sizeKey);
+    const inCart = getInCartQuantity(selectedProduct, selectedSize, selectedColor);
+    const remaining = available - inCart;
+    if (remaining < quantity) {
+      toast.error(
+        `Estoque insuficiente para o tamanho ${selectedSize || "único"}. Disponível: ${remaining > 0 ? remaining : 0}`
+      );
       return;
     }
-    addToCart(selectedProduct, quantity, selectedSize || undefined, selectedColor || undefined);
+    const added = addToCart(selectedProduct, quantity, selectedSize || undefined, selectedColor || undefined);
+    if (!added) {
+      toast.error("Estoque insuficiente");
+      return;
+    }
     toast.success(`${selectedProduct.name} adicionado ao carrinho!`);
     setSelectedProduct(null);
   };
@@ -122,6 +140,14 @@ const Merch = () => {
   useEffect(() => {
     carouselApi?.scrollTo(selectedImageIndex);
   }, [carouselApi, selectedImageIndex]);
+
+  const maxQuantity = selectedProduct
+    ? Math.max(
+        0,
+        getStockFor(selectedProduct, selectedSize) -
+          getInCartQuantity(selectedProduct, selectedSize, selectedColor)
+      )
+    : 0;
 
   return (
     <PageShell>
@@ -459,7 +485,8 @@ const Merch = () => {
                         <Button
                           variant="secondary"
                           size="icon"
-                          onClick={() => setQuantity(quantity + 1)}
+                          disabled={quantity >= maxQuantity}
+                          onClick={() => setQuantity(Math.min(quantity + 1, maxQuantity))}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>

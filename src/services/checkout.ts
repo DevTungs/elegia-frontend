@@ -1,11 +1,11 @@
 import { type CartItem, type AsaasCheckoutResponse, type CheckoutCustomer, type BillingType } from "@/types/merch";
 import { api } from "@/services/api";
+import { isValidCpfCnpj } from "@/lib/cpfCnpj";
 
 const normalizeCpfCnpj = (value: string) => value.replace(/\D/g, "");
 
 const validateCustomer = (customer: CheckoutCustomer) => {
-  const cpfCnpj = normalizeCpfCnpj(customer.cpfCnpj);
-  if (cpfCnpj.length !== 11 && cpfCnpj.length !== 14) {
+  if (!isValidCpfCnpj(customer.cpfCnpj)) {
     throw new Error("CPF/CNPJ inválido");
   }
   if (!customer.name || customer.name.trim().length < 3) {
@@ -27,7 +27,8 @@ export const checkoutService = {
   async createCheckoutSession(
     items: CartItem[],
     customer: CheckoutCustomer,
-    billingType: BillingType = "PIX"
+    billingType: BillingType = "PIX",
+    requestId?: string
   ): Promise<AsaasCheckoutResponse> {
     validateCustomer(customer);
 
@@ -49,6 +50,7 @@ export const checkoutService = {
     }));
 
     return api.post<AsaasCheckoutResponse>("/checkout", {
+      requestId,
       items: lineItems,
       customer: {
         ...customer,

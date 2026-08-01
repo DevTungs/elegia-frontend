@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { api } from "@/services/api";
+import { isValidCpfCnpj } from "@/lib/cpfCnpj";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -90,7 +91,7 @@ export default function MyOrders() {
     e.preventDefault();
 
     const normalizedCpf = cpfCnpj.replace(/\D/g, "");
-    if (normalizedCpf.length !== 11 && normalizedCpf.length !== 14) {
+    if (!isValidCpfCnpj(normalizedCpf)) {
       toast.error("CPF/CNPJ inválido");
       return;
     }

@@ -1,4 +1,4 @@
-import { useCart } from "@/hooks/useCart";
+import { useCart, getStockFor } from "@/hooks/useCart";
 import { CheckoutForm } from "@/components/CheckoutForm";
 import { Minus, Plus, ShoppingBag, Trash2, ArrowLeft, Package, MessageCircle } from "lucide-react";
 import { useState } from "react";
@@ -121,6 +121,7 @@ const CartDrawer = () => {
                           variant="ghost"
                           size="icon"
                           className="h-7 w-7"
+                          disabled={item.quantity >= getStockFor(item.product, item.selectedSize)}
                           onClick={() => updateQuantity(item.product.id, item.quantity + 1, item.selectedSize, item.selectedColor)}
                         >
                           <Plus className="h-4 w-4" />

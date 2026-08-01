@@ -22,10 +22,10 @@ import {
 } from "lucide-react";
 
 const members = [
-  { name: "Jair Neto", role: "Baixo / Backing Vocal", icon: Music },
-  { name: "Mateus Henrique", role: "Guitarrista", icon: Guitar },
-  { name: "Lucas Figueiredo", role: "Vocalista / Guitarrista", icon: Mic2 },
-  { name: "Magno Nascimento", role: "Baterista", icon: Disc3 },
+  { name: "Lucas Figueiredo", role: "Vocalista / Guitarrista", icon: Instagram, insta: "https://instagram.com/fg.loki" },
+  { name: "Jair Neto", role: "Baixo / Backing Vocal", icon: Instagram, insta: "https://instagram.com/tungsntx" },
+  { name: "Mateus Henrique", role: "Guitarrista", icon: Instagram, insta: "https://instagram.com/_mateushp" },
+  { name: "Magno Nascimento", role: "Baterista", icon: Instagram, insta: "https://instagram.com/magno.nascimento" },
 ];
 
 const influences = [
@@ -218,15 +218,22 @@ const About = () => {
                   animation="fade-up"
                   delay={((index + 1) as 1 | 2 | 3 | 4)}
                 >
-                  <Card className="surface-elevated border-white/[0.06] text-center p-6 hover:border-primary/20 transition-all hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(220,38,38,0.12)]">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                      <member.icon className="h-8 w-8 text-primary" />
-                    </div>
-                    <h3 className="text-lg font-bold mb-1">{member.name}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      {member.role}
-                    </p>
-                  </Card>
+                  <a
+                    href={member.insta}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block"
+                  >
+                    <Card className="surface-elevated border-white/[0.06] text-center p-6 hover:border-primary/20 transition-all hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(220,38,38,0.12)] cursor-pointer">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                        <member.icon className="h-8 w-8 text-primary" />
+                      </div>
+                      <h3 className="text-lg font-bold mb-1">{member.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {member.role}
+                      </p>
+                    </Card>
+                  </a>
                 </AnimatedSection>
               ))}
             </div>
@@ -249,9 +256,9 @@ const About = () => {
                   href="https://open.spotify.com/artist/2li90ydgYRoA5saOmkw0wR"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block"
+                  className="block h-full"
                 >
-                  <Card className="surface-elevated border-white/[0.06] p-6 hover:border-green-500/30 transition-all hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(30,215,96,0.15)] group cursor-pointer">
+                  <Card className="surface-elevated border-white/[0.06] p-6 h-full hover:border-green-500/30 transition-all hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(30,215,96,0.15)] group cursor-pointer">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center flex-shrink-0">
                         <Music className="h-6 w-6 text-green-500" />
@@ -275,9 +282,9 @@ const About = () => {
                   href="https://youtube.com/@bandaelegia"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block"
+                  className="block h-full"
                 >
-                  <Card className="surface-elevated border-white/[0.06] p-6 hover:border-red-500/30 transition-all hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(255,0,0,0.15)] group cursor-pointer">
+                  <Card className="surface-elevated border-white/[0.06] p-6 h-full hover:border-red-500/30 transition-all hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(255,0,0,0.15)] group cursor-pointer">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center flex-shrink-0">
                         <Youtube className="h-6 w-6 text-red-500" />
@@ -298,12 +305,12 @@ const About = () => {
 
               <AnimatedSection animation="fade-up" delay={3}>
                 <a
-                  href="https://instagram.com/l.c.elegia"
+                  href="https://instagram.com/lc.elegia"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block"
+                  className="block h-full"
                 >
-                  <Card className="surface-elevated border-white/[0.06] p-6 hover:border-pink-500/30 transition-all hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(225,48,108,0.15)] group cursor-pointer">
+                  <Card className="surface-elevated border-white/[0.06] p-6 h-full hover:border-pink-500/30 transition-all hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(225,48,108,0.15)] group cursor-pointer">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-full bg-pink-500/10 flex items-center justify-center flex-shrink-0">
                         <Instagram className="h-6 w-6 text-pink-500" />
@@ -313,7 +320,7 @@ const About = () => {
                           Instagram
                         </h3>
                         <p className="text-sm text-muted-foreground">
-                          @l.c.elegia
+                          Elegia L.C
                         </p>
                       </div>
                       <ExternalLink className="h-4 w-4 text-muted-foreground ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />

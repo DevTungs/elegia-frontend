@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { type CartItem, type BillingType, type CheckoutCustomer } from "@/types/merch";
 import { checkoutService } from "@/services/checkout";
 import { Input } from "@/components/ui/input";
@@ -92,6 +92,12 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
   const [billingType, setBillingType] = useState<BillingType>("PIX");
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingZipCode, setIsLoadingZipCode] = useState(false);
+  const submittingRef = useRef(false);
+  const requestIdRef = useRef(
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
 
   const subtotal = total - shipping;
 
@@ -144,11 +150,12 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return;
-
+    if (submittingRef.current) return;
+    submittingRef.current = true;
     setIsLoading(true);
     try {
       validateAddress();
-      const result = await checkoutService.createCheckoutSession(items, customer, billingType);
+      const result = await checkoutService.createCheckoutSession(items, customer, billingType, requestIdRef.current);
 
       if (billingType === "PIX" && result.pixPayload) {
         localStorage.setItem(
@@ -173,6 +180,7 @@ export const CheckoutForm = ({ items, total, shipping, onSuccess, onCancel }: Ch
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Erro ao finalizar compra");
     } finally {
+      submittingRef.current = false;
       setIsLoading(false);
     }
   };
