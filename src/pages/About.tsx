@@ -411,7 +411,7 @@ const About = () => {
                   className="border-primary/30 text-foreground hover:bg-primary/10 hover:border-primary/50 font-bold uppercase tracking-[0.15em] transition-all rounded-md"
                 >
                   <a
-                    href="https://instagram.com/l.c.elegia"
+                    href="https://instagram.com/lc.elegia"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
