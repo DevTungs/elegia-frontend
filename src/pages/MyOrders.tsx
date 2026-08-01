@@ -65,7 +65,7 @@ const formatDate = (date: string) =>
   });
 
 const formatCpfCnpj = (value: string) => {
-  const digits = value.replace(/\D/g, "");
+  const digits = value.replace(/\D/g, "").slice(0, 14);
   if (digits.length <= 11) {
     return digits
       .replace(/(\d{3})(\d)/, "$1.$2")
@@ -182,6 +182,7 @@ export default function MyOrders() {
                         value={cpfCnpj}
                         onChange={(e) => setCpfCnpj(formatCpfCnpj(e.target.value))}
                         placeholder="000.000.000-00"
+                        maxLength={18}
                         required
                         className="bg-background border-white/[0.08]"
                       />

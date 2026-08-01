@@ -83,7 +83,11 @@ const Merch = () => {
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
-    setSelectedSize(product.sizes?.[0] || "");
+    const availableSize =
+      product.sizes?.find((size) => getStockFor(product, size) > 0) ||
+      product.sizes?.[0] ||
+      "";
+    setSelectedSize(availableSize);
     setSelectedColor(product.colors?.[0] || null);
     setQuantity(1);
     setSelectedImageIndex(0);
