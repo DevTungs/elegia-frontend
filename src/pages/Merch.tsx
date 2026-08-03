@@ -31,6 +31,9 @@ import {
 const getTotalStock = (stock: Record<string, number>): number =>
   Object.values(stock || {}).reduce((sum, v) => sum + (Number(v) || 0), 0);
 
+const getTotalStockFor = (product: Product): number =>
+  product.total_stock ?? getTotalStock(product.stock as Record<string, number>);
+
 const Merch = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -208,6 +211,13 @@ const Merch = () => {
                                   className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-all duration-500 group-hover:scale-105"
                                 />
                               )}
+                              {getTotalStockFor(product) === 0 && (
+                                <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
+                                  <span className="text-white font-black text-sm tracking-[0.25em] uppercase border-2 border-white/70 px-4 py-2 rotate-[-8deg]">
+                                    SOLD OUT
+                                  </span>
+                                </div>
+                              )}
                             </div>
                             <CardContent className="p-6 flex flex-col justify-center flex-1">
                               <span className="text-[10px] uppercase tracking-[0.2em] text-primary font-bold mb-2">
@@ -297,11 +307,19 @@ const Merch = () => {
                                 Ver Detalhes
                               </Button>
                             </div>
-                            {(product.total_stock ?? getTotalStock(product.stock as Record<string, number>)) < 5 && (
-                              <div className="absolute top-3 left-3 animate-pulse">
-                                <Badge variant="destructive" className="text-[11px] px-3 py-1">
-                                  ⚡ Restam poucas unidades!
-                                </Badge>
+                            {(product.total_stock ?? getTotalStock(product.stock as Record<string, number>)) > 0 &&
+                              (product.total_stock ?? getTotalStock(product.stock as Record<string, number>)) < 5 && (
+                                <div className="absolute top-3 left-3 animate-pulse">
+                                  <Badge variant="destructive" className="text-[11px] px-3 py-1">
+                                    ⚡ Restam poucas unidades!
+                                  </Badge>
+                                </div>
+                              )}
+                            {getTotalStockFor(product) === 0 && (
+                              <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
+                                <span className="text-white font-black text-lg tracking-[0.25em] uppercase border-2 border-white/70 px-5 py-2 rotate-[-8deg]">
+                                  SOLD OUT
+                                </span>
                               </div>
                             )}
                             {product.featured && (
@@ -501,14 +519,24 @@ const Merch = () => {
 
                     <Button
                       onClick={handleAddToCart}
-                      className="mt-auto w-full h-12 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 rounded-md hover:shadow-[0_0_30px_rgba(220,38,38,0.3)] hover:scale-[1.02] transition-all"
+                      disabled={getTotalStockFor(selectedProduct) === 0}
+                      className="mt-auto w-full h-12 bg-primary text-primary-foreground font-bold uppercase tracking-widest hover:bg-primary/90 rounded-md hover:shadow-[0_0_30px_rgba(220,38,38,0.3)] hover:scale-[1.02] transition-all disabled:opacity-40 disabled:pointer-events-none"
                     >
                       <ShoppingBag className="h-5 w-5 mr-2" />
-                      Adicionar ao Carrinho
+                      {getTotalStockFor(selectedProduct) === 0 ? "Esgotado" : "Adicionar ao Carrinho"}
                     </Button>
 
                     {(() => {
-                      const total = selectedProduct.total_stock ?? getTotalStock(selectedProduct.stock as Record<string, number>);
+                      const total = getTotalStockFor(selectedProduct);
+                      if (total === 0) {
+                        return (
+                          <div className="mt-3 p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-center">
+                            <p className="text-xs font-bold text-destructive">
+                              Este produto está esgotado
+                            </p>
+                          </div>
+                        );
+                      }
                       return total < 5 ? (
                         <div className="mt-3 p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-center animate-pulse">
                           <p className="text-xs font-bold text-destructive">
