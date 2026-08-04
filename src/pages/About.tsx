@@ -388,7 +388,7 @@ const About = () => {
             {/* CTA */}
             <AnimatedSection animation="scale" className="text-center">
               <p className="text-foreground/60 mb-6 text-lg">
-                Elegia L.C. — Metal com alma e atitude.
+                Elegia L.C.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button
