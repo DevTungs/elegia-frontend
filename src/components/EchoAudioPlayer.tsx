@@ -4,6 +4,8 @@ import { Slider } from "@/components/ui/slider";
 
 interface EchoAudioPlayerProps {
   src: string;
+  onEnded?: () => void;
+  autoPlay?: boolean;
 }
 
 function formatTime(seconds: number): string {
@@ -13,7 +15,7 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-const EchoAudioPlayer = ({ src }: EchoAudioPlayerProps) => {
+const EchoAudioPlayer = ({ src, onEnded, autoPlay }: EchoAudioPlayerProps) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -27,24 +29,34 @@ const EchoAudioPlayer = ({ src }: EchoAudioPlayerProps) => {
 
     const onTimeUpdate = () => setCurrentTime(audio.currentTime);
     const onLoadedMetadata = () => setDuration(audio.duration);
-    const onEnded = () => setPlaying(false);
+    const onEndedEvent = () => {
+      setPlaying(false);
+      onEnded?.();
+    };
     const onPlay = () => setPlaying(true);
     const onPause = () => setPlaying(false);
 
     audio.addEventListener("timeupdate", onTimeUpdate);
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
-    audio.addEventListener("ended", onEnded);
+    audio.addEventListener("ended", onEndedEvent);
     audio.addEventListener("play", onPlay);
     audio.addEventListener("pause", onPause);
 
     return () => {
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
-      audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("ended", onEndedEvent);
       audio.removeEventListener("play", onPlay);
       audio.removeEventListener("pause", onPause);
     };
   }, []);
+
+  useEffect(() => {
+    if (autoPlay && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+    }
+  }, [autoPlay]);
 
   const togglePlay = () => {
     const audio = audioRef.current;

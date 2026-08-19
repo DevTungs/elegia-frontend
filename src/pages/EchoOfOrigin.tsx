@@ -38,6 +38,7 @@ const EchoOfOrigin = () => {
   const [isRevealed, setIsRevealed] = useState(false);
   const [downloadStats, setDownloadStats] = useState<Record<string, number>>({});
   const [downloading, setDownloading] = useState<string | null>(null);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(-1);
 
   useEffect(() => {
     document.title = "Echo Of Origin | Elegia L.C";
@@ -78,6 +79,12 @@ const EchoOfOrigin = () => {
       document.body.removeChild(a);
     }
     setDownloading(null);
+  }, []);
+
+  const handleTrackEnded = useCallback((trackIndex: number) => {
+    if (trackIndex < draftTracks.length - 1) {
+      setCurrentTrackIndex(trackIndex + 1);
+    }
   }, []);
 
   useEffect(() => {
@@ -221,7 +228,11 @@ const EchoOfOrigin = () => {
                         <p className="mt-2 text-xs uppercase tracking-[0.14em] text-zinc-500">{track.details}</p>
                         <p className="mt-4 text-sm leading-relaxed text-zinc-400">{track.note}</p>
                         <div className="mt-auto pt-5 space-y-3">
-                          <EchoAudioPlayer src={track.src} />
+                          <EchoAudioPlayer
+                            src={track.src}
+                            onEnded={() => handleTrackEnded(index)}
+                            autoPlay={currentTrackIndex === index}
+                          />
                           <button
                             type="button"
                             onClick={() => handleDownload(track.trackId)}

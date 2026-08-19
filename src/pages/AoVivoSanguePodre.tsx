@@ -56,6 +56,7 @@ const AoVivoSanguePodre = () => {
   const [stats, setStats] = useState<Stats>({ views: {}, downloads: {} });
   const [downloading, setDownloading] = useState<string | null>(null);
   const [viewedTracks, setViewedTracks] = useState<Set<string>>(new Set());
+  const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(-1);
 
   useEffect(() => {
     document.title = "Sangue Podre Fest Ao Vivo | Elegia L.C";
@@ -94,6 +95,12 @@ const AoVivoSanguePodre = () => {
     a.click();
     document.body.removeChild(a);
     setDownloading(null);
+  }, []);
+
+  const handleTrackEnded = useCallback((trackIndex: number) => {
+    if (trackIndex < liveTracks.length - 1) {
+      setCurrentTrackIndex(trackIndex + 1);
+    }
   }, []);
 
   return (
@@ -173,6 +180,8 @@ const AoVivoSanguePodre = () => {
                         src={track.src}
                         playerId={track.trackId}
                         onPlay={() => handlePlay(track.trackId)}
+                        onEnded={() => handleTrackEnded(index)}
+                        autoPlay={currentTrackIndex === index}
                       />
 
                       <div className="flex items-center justify-between border-t border-white/[0.06] pt-3">

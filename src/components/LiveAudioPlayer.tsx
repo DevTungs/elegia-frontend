@@ -8,6 +8,8 @@ interface LiveAudioPlayerProps {
   src: string;
   playerId: string;
   onPlay?: () => void;
+  onEnded?: () => void;
+  autoPlay?: boolean;
 }
 
 function formatTime(seconds: number): string {
@@ -17,7 +19,7 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-const LiveAudioPlayer = ({ src, playerId, onPlay }: LiveAudioPlayerProps) => {
+const LiveAudioPlayer = ({ src, playerId, onPlay, onEnded, autoPlay }: LiveAudioPlayerProps) => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const idRef = useRef(playerId);
   const [playing, setPlaying] = useState(false);
@@ -36,20 +38,23 @@ const LiveAudioPlayer = ({ src, playerId, onPlay }: LiveAudioPlayerProps) => {
 
     const onTimeUpdate = () => setCurrentTime(audio.currentTime);
     const onLoadedMetadata = () => setDuration(audio.duration);
-    const onEnded = () => setPlaying(false);
+    const onEndedEvent = () => {
+      setPlaying(false);
+      onEnded?.();
+    };
     const onPlayEvent = () => setPlaying(true);
     const onPauseEvent = () => setPlaying(false);
 
     audio.addEventListener("timeupdate", onTimeUpdate);
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
-    audio.addEventListener("ended", onEnded);
+    audio.addEventListener("ended", onEndedEvent);
     audio.addEventListener("play", onPlayEvent);
     audio.addEventListener("pause", onPauseEvent);
 
     return () => {
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
-      audio.removeEventListener("ended", onEnded);
+      audio.removeEventListener("ended", onEndedEvent);
       audio.removeEventListener("play", onPlayEvent);
       audio.removeEventListener("pause", onPauseEvent);
     };
@@ -64,6 +69,15 @@ const LiveAudioPlayer = ({ src, playerId, onPlay }: LiveAudioPlayerProps) => {
     window.addEventListener(LIVE_AUDIO_EVENT, handleOtherPlay as EventListener);
     return () => window.removeEventListener(LIVE_AUDIO_EVENT, handleOtherPlay as EventListener);
   }, []);
+
+  useEffect(() => {
+    if (autoPlay && audioRef.current) {
+      audioRef.current.currentTime = 0;
+      audioRef.current.play().catch(() => {});
+      window.dispatchEvent(new CustomEvent(LIVE_AUDIO_EVENT, { detail: { id: idRef.current } }));
+      onPlay?.();
+    }
+  }, [autoPlay]);
 
   const togglePlay = () => {
     const audio = audioRef.current;
