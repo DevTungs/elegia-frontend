@@ -336,3 +336,58 @@
 .animation-delay-500 {
   transition-delay: 500ms;
 }
+
+/* Leaked Banner - Glitch Effect */
+.glitch-active {
+  animation: glitch-text 0.2s steps(2) both;
+}
+
+@keyframes glitch-text {
+  0% {
+    text-shadow: 2px 0 #ff0040, -2px 0 #00ffff;
+    transform: translate(0);
+  }
+  20% {
+    text-shadow: -3px -1px #ff0040, 3px 1px #00ffff;
+    transform: translate(-2px, 1px);
+  }
+  40% {
+    text-shadow: 3px 2px #ff0040, -3px -2px #00ffff;
+    transform: translate(2px, -1px);
+  }
+  60% {
+    text-shadow: -1px -2px #ff0040, 1px 2px #00ffff;
+    transform: translate(-1px, 2px);
+  }
+  80% {
+    text-shadow: 2px 1px #ff0040, -2px -1px #00ffff;
+    transform: translate(1px, -2px);
+  }
+  100% {
+    text-shadow: 0 0 transparent, 0 0 transparent;
+    transform: translate(0);
+  }
+}
+
+/* Leaked Banner - Scanlines */
+.scanlines {
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.15) 2px,
+    rgba(0, 0, 0, 0.15) 4px
+  );
+}
+
+/* Leaked Banner - Typewriter blink */
+.typewriter-text::after {
+  content: "_";
+  animation: blink-caret 1s step-end infinite;
+  color: hsl(0 72% 51%);
+}
+
+@keyframes blink-caret {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}

@@ -59,6 +59,7 @@ const AoVivoSanguePodre = () => {
 
   useEffect(() => {
     document.title = "Sangue Podre Fest Ao Vivo | Elegia L.C";
+    window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
@@ -117,7 +118,7 @@ const AoVivoSanguePodre = () => {
                 <div className="relative mb-8 group">
                   <div className="absolute -inset-4 bg-red-500/10 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                   <img
-                    src="/elegialc-aovivo-sanguepodre/capalive.jpeg"
+                    src="/elegialc-aovivo-sanguepodre/MASCOTE67.png"
                     alt="Sangue Podre Ao Vivo - Capa"
                     className="relative w-full max-w-sm rounded-xl border border-white/[0.1] shadow-[0_0_60px_rgba(220,38,38,0.2)] transition-transform duration-500 hover:scale-[1.02]"
                   />
@@ -133,7 +134,7 @@ const AoVivoSanguePodre = () => {
 
               <FadeIn delay={300}>
                 <p className="mt-3 text-sm uppercase tracking-[0.3em] text-zinc-500">
-                  aniversário de 1 ano · Sangue Podre Fest 2026
+                  Sangue Podre Fest Janeiro de 2026
                 </p>
               </FadeIn>
 
