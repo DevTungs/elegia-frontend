@@ -14,6 +14,7 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
 import EchoOfOrigin from "./pages/EchoOfOrigin";
+import SanguePodre from "./pages/AoVivoSanguePodre";
 import MyOrders from "./pages/MyOrders";
 import Origins from "./pages/Origins";
 
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/sobre" element={<About />} />
             <Route path="/origins" element={<Origins />} />
             <Route path="/echooforigin" element={<EchoOfOrigin />} />
+            <Route path="/ao-vivo/sangue-podre" element={<SanguePodre />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="*" element={<NotFound />} />
