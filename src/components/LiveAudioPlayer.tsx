@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from "react";
 import { Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 
+const LIVE_AUDIO_EVENT = "live-audio:play";
+
 interface LiveAudioPlayerProps {
   src: string;
+  playerId: string;
   onPlay?: () => void;
 }
 
@@ -14,13 +17,18 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-const LiveAudioPlayer = ({ src, onPlay }: LiveAudioPlayerProps) => {
+const LiveAudioPlayer = ({ src, playerId, onPlay }: LiveAudioPlayerProps) => {
   const audioRef = useRef<HTMLAudioElement>(null);
+  const idRef = useRef(playerId);
   const [playing, setPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [muted, setMuted] = useState(false);
+
+  useEffect(() => {
+    idRef.current = playerId;
+  }, [playerId]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -29,22 +37,32 @@ const LiveAudioPlayer = ({ src, onPlay }: LiveAudioPlayerProps) => {
     const onTimeUpdate = () => setCurrentTime(audio.currentTime);
     const onLoadedMetadata = () => setDuration(audio.duration);
     const onEnded = () => setPlaying(false);
-    const onPlay = () => setPlaying(true);
-    const onPause = () => setPlaying(false);
+    const onPlayEvent = () => setPlaying(true);
+    const onPauseEvent = () => setPlaying(false);
 
     audio.addEventListener("timeupdate", onTimeUpdate);
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
     audio.addEventListener("ended", onEnded);
-    audio.addEventListener("play", onPlay);
-    audio.addEventListener("pause", onPause);
+    audio.addEventListener("play", onPlayEvent);
+    audio.addEventListener("pause", onPauseEvent);
 
     return () => {
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
       audio.removeEventListener("ended", onEnded);
-      audio.removeEventListener("play", onPlay);
-      audio.removeEventListener("pause", onPause);
+      audio.removeEventListener("play", onPlayEvent);
+      audio.removeEventListener("pause", onPauseEvent);
     };
+  }, []);
+
+  useEffect(() => {
+    const handleOtherPlay = (e: CustomEvent<{ id: string }>) => {
+      if (e.detail.id !== idRef.current) {
+        audioRef.current?.pause();
+      }
+    };
+    window.addEventListener(LIVE_AUDIO_EVENT, handleOtherPlay as EventListener);
+    return () => window.removeEventListener(LIVE_AUDIO_EVENT, handleOtherPlay as EventListener);
   }, []);
 
   const togglePlay = () => {
@@ -52,6 +70,7 @@ const LiveAudioPlayer = ({ src, onPlay }: LiveAudioPlayerProps) => {
     if (!audio) return;
     if (audio.paused) {
       audio.play();
+      window.dispatchEvent(new CustomEvent(LIVE_AUDIO_EVENT, { detail: { id: idRef.current } }));
       onPlay?.();
     } else {
       audio.pause();
@@ -100,7 +119,11 @@ const LiveAudioPlayer = ({ src, onPlay }: LiveAudioPlayerProps) => {
           type="button"
           onClick={togglePlay}
           aria-label={playing ? "Pausar" : "Tocar"}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-600 text-white transition-all hover:bg-red-500 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition-all ${
+            playing
+              ? "bg-red-500 shadow-[0_0_25px_rgba(220,38,38,0.5)] scale-110"
+              : "bg-red-600 hover:bg-red-500 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+          }`}
         >
           {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
         </button>
