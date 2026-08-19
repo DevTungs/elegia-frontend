@@ -109,7 +109,7 @@ const AoVivoSanguePodre = () => {
               <FadeIn>
                 <div className="inline-flex items-center gap-2 rounded-full border border-red-500/20 bg-red-500/10 px-4 py-1.5 mb-8">
                   <Music className="h-3.5 w-3.5 text-red-400" />
-                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-red-400">exclusive release</span>
+                  <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-red-400">EP EXCLUSIVO</span>
                 </div>
               </FadeIn>
 
@@ -127,20 +127,20 @@ const AoVivoSanguePodre = () => {
 
               <FadeIn delay={200}>
                 <h1 className="text-6xl uppercase text-zinc-100 md:text-8xl headline-glow">
-                  Sangue Podre
+                  Elegia L.C Ao Vivo
                 </h1>
               </FadeIn>
 
               <FadeIn delay={300}>
                 <p className="mt-3 text-sm uppercase tracking-[0.3em] text-zinc-500">
-                  ao vivo · gravado · mixado · masterizado
+                  aniversário de 1 ano · Sangue Podre Fest 2026
                 </p>
               </FadeIn>
 
               <FadeIn delay={400}>
                 <p className="mt-4 max-w-xl mx-auto text-sm leading-relaxed text-zinc-400">
                   Seis faixas capturadas ao vivo. Sem filtros, sem edição.
-                  Apenas a energia crua do palco direto nos seus ouvidos.
+                  Violência Absoluta.
                 </p>
               </FadeIn>
             </div>
