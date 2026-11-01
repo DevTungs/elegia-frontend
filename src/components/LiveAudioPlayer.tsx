@@ -1,186 +1,129 @@
-import { useEffect, useRef, useState } from "react";
-import { Pause, Play, Volume2, VolumeX } from "lucide-react";
-import { Slider } from "@/components/ui/slider";
+import { useRef, useState } from "react";
+import { Download, Headphones, Loader2, Pause, Play, SkipBack, SkipForward, Volume2, VolumeX } from "lucide-react";
 
-const LIVE_AUDIO_EVENT = "live-audio:play";
+interface Track {
+  trackId: string;
+  title: string;
+  src: string;
+  file: string;
+}
 
 interface LiveAudioPlayerProps {
-  src: string;
-  playerId: string;
-  onPlay?: () => void;
-  onEnded?: () => void;
-  autoPlay?: boolean;
+  tracks: Track[];
+  views: Record<string, number>;
+  downloads: Record<string, number>;
+  downloading: string | null;
+  onPlay: (trackId: string) => void;
+  onDownload: (trackId: string, file: string) => void;
 }
 
-function formatTime(seconds: number): string {
-  if (!isFinite(seconds)) return "0:00";
-  const m = Math.floor(seconds / 60);
-  const s = Math.floor(seconds % 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
+const cover = "/elegialc-aovivo-sanguepodre/MASCOTE67.png";
+const formatTime = (seconds: number) => Number.isFinite(seconds)
+  ? `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60).toString().padStart(2, "0")}` : "0:00";
 
-const LiveAudioPlayer = ({ src, playerId, onPlay, onEnded, autoPlay }: LiveAudioPlayerProps) => {
+const LiveAudioPlayer = ({ tracks, views, downloads, downloading, onPlay, onDownload }: LiveAudioPlayerProps) => {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const idRef = useRef(playerId);
+  const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [muted, setMuted] = useState(false);
+  const [error, setError] = useState("");
+  const track = tracks[index];
 
-  useEffect(() => {
-    idRef.current = playerId;
-  }, [playerId]);
-
-  useEffect(() => {
+  const playTrack = async (nextIndex: number) => {
     const audio = audioRef.current;
     if (!audio) return;
-
-    const onTimeUpdate = () => setCurrentTime(audio.currentTime);
-    const onLoadedMetadata = () => setDuration(audio.duration);
-    const onEndedEvent = () => {
-      setPlaying(false);
-      onEnded?.();
-    };
-    const onPlayEvent = () => setPlaying(true);
-    const onPauseEvent = () => setPlaying(false);
-
-    audio.addEventListener("timeupdate", onTimeUpdate);
-    audio.addEventListener("loadedmetadata", onLoadedMetadata);
-    audio.addEventListener("ended", onEndedEvent);
-    audio.addEventListener("play", onPlayEvent);
-    audio.addEventListener("pause", onPauseEvent);
-
-    return () => {
-      audio.removeEventListener("timeupdate", onTimeUpdate);
-      audio.removeEventListener("loadedmetadata", onLoadedMetadata);
-      audio.removeEventListener("ended", onEndedEvent);
-      audio.removeEventListener("play", onPlayEvent);
-      audio.removeEventListener("pause", onPauseEvent);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleOtherPlay = (e: CustomEvent<{ id: string }>) => {
-      if (e.detail.id !== idRef.current) {
-        audioRef.current?.pause();
-      }
-    };
-    window.addEventListener(LIVE_AUDIO_EVENT, handleOtherPlay as EventListener);
-    return () => window.removeEventListener(LIVE_AUDIO_EVENT, handleOtherPlay as EventListener);
-  }, []);
-
-  useEffect(() => {
-    if (autoPlay && audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
-      window.dispatchEvent(new CustomEvent(LIVE_AUDIO_EVENT, { detail: { id: idRef.current } }));
-      onPlay?.();
+    setError("");
+    if (nextIndex !== index || !audio.getAttribute("src")) {
+      audio.src = tracks[nextIndex].src;
+      setIndex(nextIndex);
+      setCurrentTime(0);
+      setDuration(0);
     }
-  }, [autoPlay]);
+    audio.volume = volume;
+    setLoading(true);
+    try {
+      await audio.play();
+    } catch (cause) {
+      if (cause instanceof DOMException && cause.name === "AbortError") return;
+      setError("Não foi possível reproduzir a faixa. Tente novamente.");
+      setLoading(false);
+    }
+  };
 
   const togglePlay = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    if (audio.paused) {
-      audio.play();
-      window.dispatchEvent(new CustomEvent(LIVE_AUDIO_EVENT, { detail: { id: idRef.current } }));
-      onPlay?.();
+    if (playing || loading) {
+      audioRef.current?.pause();
+      setLoading(false);
     } else {
-      audio.pause();
+      void playTrack(index);
     }
-  };
-
-  const handleSeek = (value: number[]) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = value[0];
-    setCurrentTime(value[0]);
-  };
-
-  const handleVolume = (value: number[]) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const v = value[0];
-    audio.volume = v;
-    setVolume(v);
-    if (v > 0 && muted) {
-      audio.muted = false;
-      setMuted(false);
-    }
-    if (v === 0) {
-      audio.muted = true;
-      setMuted(true);
-    }
-  };
-
-  const toggleMute = () => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    const next = !audio.muted;
-    audio.muted = next;
-    setMuted(next);
   };
 
   return (
-    <div className="space-y-3">
-      <audio ref={audioRef} preload="none">
-        <source src={src} type="audio/mpeg" />
-      </audio>
+    <div className="live-album">
+      <audio ref={audioRef} preload="none"
+        onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
+        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)}
+        onPlaying={() => { setPlaying(true); setLoading(false); onPlay(track.trackId); }}
+        onPause={() => setPlaying(false)}
+        onWaiting={() => setLoading(true)}
+        onError={() => { setPlaying(false); setLoading(false); setError("Não foi possível carregar a faixa. Tente novamente."); }}
+        onEnded={() => { setPlaying(false); if (index < tracks.length - 1) void playTrack(index + 1); }}
+      />
 
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={togglePlay}
-          aria-label={playing ? "Pausar" : "Tocar"}
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-white transition-all ${
-            playing
-              ? "bg-red-500 shadow-[0_0_25px_rgba(220,38,38,0.5)] scale-110"
-              : "bg-red-600 hover:bg-red-500 hover:shadow-[0_0_20px_rgba(220,38,38,0.4)]"
-          }`}
-        >
-          {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
-        </button>
-
-        <div className="flex-1 min-w-0">
-          <Slider
-            value={[currentTime]}
-            min={0}
-            max={duration || 100}
-            step={0.1}
-            onValueChange={handleSeek}
-            className="w-full"
-            trackClassName="bg-zinc-800"
-            rangeClassName="bg-red-500"
-            thumbClassName="border-red-500 bg-zinc-900 hover:bg-zinc-800 hover:border-red-400"
-          />
+      <header className="live-album-header">
+        <img src={cover} alt="Capa de Elegia L.C. ao vivo no Sangue Podre Fest" className="live-album-cover" />
+        <div className="min-w-0">
+          <h1>Sangue Podre<br />Fest - Ao vivo</h1>
+          <p className="mt-5 text-white/90 font-semibold">Elegia L.C. <span className="font-normal text-white/65"> · Janeiro de 2026 · {tracks.length} faixas</span></p>
+          <p className="mt-4 max-w-lg text-sm leading-relaxed text-white/75">Seis faixas capturadas ao vivo. Sem filtros, sem edição. Violência Absoluta.</p>
         </div>
+      </header>
 
-        <span className="text-[11px] font-mono text-zinc-500 shrink-0 tabular-nums">
-          {formatTime(currentTime)} / {formatTime(duration)}
-        </span>
+      <div className="live-tracklist">
+        <div className="flex items-center gap-5 py-7">
+          <button type="button" onClick={togglePlay} aria-label={playing || loading ? "Pausar álbum" : "Reproduzir álbum"} className="live-play-button h-14 w-14">
+            {loading ? <Loader2 className="animate-spin" /> : playing ? <Pause fill="currentColor" /> : <Play fill="currentColor" className="ml-1" />}
+          </button>
+          <p className="text-sm text-zinc-400">O peso do palco.<br /><span className="text-zinc-200">Direto nos seus fones.</span></p>
+        </div>
+        <div className="live-track-heading" aria-hidden="true"><span>#</span><span>Título</span><span className="hidden sm:block">Reproduções</span><span className="text-right">Download</span></div>
+        <ol>
+          {tracks.map((item, itemIndex) => (
+            <li key={item.trackId} className={`live-track-row ${index === itemIndex ? "is-current" : ""}`}>
+              <button type="button" onClick={() => itemIndex === index ? togglePlay() : void playTrack(itemIndex)} className="live-track-select" aria-label={`${index === itemIndex && playing ? "Pausar" : "Reproduzir"} ${item.title}`} aria-current={index === itemIndex ? "true" : undefined}>
+                <span className="live-track-number">{index === itemIndex && loading ? <Loader2 size={16} className="animate-spin" /> : index === itemIndex && playing ? <span className="live-equalizer" aria-hidden="true"><i /><i /><i /></span> : <span>{String(itemIndex + 1).padStart(2, "0")}</span>}</span>
+                <span className="min-w-0"><span className="block truncate font-medium">{item.title}</span><span className="block text-xs text-zinc-400 mt-1">Elegia L.C. · Ao vivo</span></span>
+              </button>
+              <span className="hidden sm:flex items-center gap-2 text-xs text-zinc-400 tabular-nums"><Headphones size={14} />{views[item.trackId] ?? 0}</span>
+              <button type="button" disabled={downloading === item.trackId} onClick={() => onDownload(item.trackId, item.file)} aria-label={`Baixar ${item.title}`} className="justify-self-end flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-50 transition-colors"><span className="hidden md:inline text-xs tabular-nums">{downloads[item.trackId] ?? 0}</span>{downloading === item.trackId ? <Loader2 size={18} className="animate-spin" /> : <Download size={18} />}</button>
+            </li>
+          ))}
+        </ol>
+        {error && <p role="alert" className="py-4 text-sm text-red-300">{error}</p>}
       </div>
 
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={toggleMute}
-          aria-label={muted ? "Ativar som" : "Mutado"}
-          className="text-zinc-500 hover:text-zinc-300 transition-colors"
-        >
-          {muted ? <VolumeX className="h-3.5 w-3.5" /> : <Volume2 className="h-3.5 w-3.5" />}
-        </button>
-        <Slider
-          value={[muted ? 0 : volume]}
-          min={0}
-          max={1}
-          step={0.01}
-          onValueChange={handleVolume}
-          className="w-20"
-          trackClassName="bg-zinc-800"
-          rangeClassName="bg-zinc-500"
-          thumbClassName="border-zinc-500 bg-zinc-900 hover:bg-zinc-800 hover:border-zinc-400"
-        />
+      <div className="live-now-playing" role="region" aria-label="Controles de reprodução">
+        <div className="flex items-center gap-3 min-w-0">
+          <img src={cover} alt="" className="h-12 w-12 rounded object-cover" />
+          <div className="min-w-0"><p className="truncate text-sm font-semibold">{track.title}</p><p className="text-xs text-zinc-400 mt-1">Elegia L.C.</p></div>
+        </div>
+        <div className="live-transport">
+          <div className="flex items-center justify-center gap-5">
+            <button type="button" aria-label="Faixa anterior" disabled={index === 0} onClick={() => void playTrack(index - 1)} className="live-control"><SkipBack size={19} fill="currentColor" /></button>
+            <button type="button" onClick={togglePlay} aria-label={playing || loading ? "Pausar" : "Reproduzir"} className="live-play-button h-10 w-10">{loading ? <Loader2 size={18} className="animate-spin" /> : playing ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}</button>
+            <button type="button" aria-label="Próxima faixa" disabled={index === tracks.length - 1} onClick={() => void playTrack(index + 1)} className="live-control"><SkipForward size={19} fill="currentColor" /></button>
+          </div>
+          <div className="flex items-center gap-3 mt-2"><span className="text-[11px] text-zinc-400 tabular-nums w-9 text-right">{formatTime(currentTime)}</span><input type="range" aria-label="Posição da reprodução" min="0" max={duration || 0} step="0.1" value={currentTime} disabled={!duration} onChange={(event) => { if (audioRef.current) { audioRef.current.currentTime = Number(event.target.value); setCurrentTime(Number(event.target.value)); } }} className="live-range flex-1 min-w-0" /><span className="text-[11px] text-zinc-400 tabular-nums w-9">{formatTime(duration)}</span></div>
+        </div>
+        <div className="live-volume flex items-center justify-end gap-2">
+          <button type="button" aria-label={muted ? "Ativar som" : "Silenciar"} className="live-control" onClick={() => { if (audioRef.current) { audioRef.current.muted = !muted; setMuted(!muted); } }}>{muted || volume === 0 ? <VolumeX size={19} /> : <Volume2 size={19} />}</button>
+          <input type="range" aria-label="Volume" min="0" max="1" step="0.01" value={muted ? 0 : volume} onChange={(event) => { const value = Number(event.target.value); setVolume(value); setMuted(false); if (audioRef.current) { audioRef.current.volume = value; audioRef.current.muted = false; } }} className="live-range w-24" />
+        </div>
       </div>
     </div>
   );

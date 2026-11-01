@@ -27,7 +27,7 @@ const durationClasses = {
 };
 
 const getAnimationClasses = (animation: AnimatedSectionProps["animation"], isInView: boolean) => {
-  const base = "transition-opacity transition-transform motion-reduce:transition-none";
+  const base = "scroll-reveal transition-[opacity,transform] ease-out motion-reduce:transition-none";
 
   if (!isInView) {
     switch (animation) {

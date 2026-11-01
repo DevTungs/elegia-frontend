@@ -1,77 +1,45 @@
 import elegiaLogo from "@/assets/elegia-logo.png";
+import bandPhoto from "@/assets/galpao-hero.webp";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChevronDown } from "lucide-react";
+import { ArrowDown, ArrowUpRight, Play } from "lucide-react";
 import { handleAnchorClick } from "@/lib/scroll";
 
-const Hero = () => {
-  return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden noise-bg">
-      <div className="absolute inset-0 bg-background" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(0_72%_51%_/_0.08)_0%,_transparent_60%)]" />
+const Hero = () => (
+  <section className="band-hero relative isolate overflow-hidden">
+    <img src={bandPhoto} alt="" fetchPriority="high" className="band-hero-photo absolute inset-0 h-full w-full object-cover" />
+    <div className="band-hero-shade absolute inset-0" />
 
-      {/* Grid background */}
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage:
-            "linear-gradient(hsl(0 72% 51% / 0.5) 1px, transparent 1px), linear-gradient(90deg, hsl(0 72% 51% / 0.5) 1px, transparent 1px)",
-          backgroundSize: "80px 80px",
-        }}
-      />
-
-      <div className="glow-orb top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/15 opacity-40 animate-pulse" />
-      <div className="glow-orb bottom-1/4 right-1/4 w-[400px] h-[400px] bg-primary/10 opacity-30" />
-
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,transparent_0%,hsl(0_0%_3%_/_0.5)_100%)]" />
-
-      <div className="relative z-10 container mx-auto px-4 text-center flex flex-col items-center">
-        <div className="mb-10 md:mb-12 fade-up">
-          <img
-            src={elegiaLogo}
-            alt="Elegia L.C."
-            className="w-full max-w-md md:max-w-lg mx-auto drop-shadow-[0_0_60px_rgba(220,38,38,0.2)] hover:scale-105 transition-transform duration-700 ease-out"
-          />
-        </div>
-
-        <p className="text-lg md:text-2xl font-light tracking-[0.2em] mb-10 md:mb-12 fade-up-delay text-foreground/80 uppercase headline-glow">
-          Metalcore <span className="text-primary/70 mx-2">•</span> Intensidade{" "}
-          <span className="text-primary/70 mx-2">•</span> Melodia
+    <div className="container relative z-10 mx-auto px-6 lg:px-12 pt-32 pb-28">
+      <div className="max-w-2xl">
+        <h1 className="hero-logo-reveal mb-6">
+          <span className="sr-only">Elegia L.C.</span>
+          <img src={elegiaLogo} alt="" className="w-full max-w-[440px]" />
+        </h1>
+        <p className="fade-up-delay text-sm uppercase tracking-[0.24em] text-white/80 mb-5">
+          Metalcore · Brasil
         </p>
-
-        <div className="flex flex-col sm:flex-row gap-4 justify-center fade-up-delay-2 w-full max-w-md mx-auto">
-          <Button
-            asChild
-            size="lg"
-            className="bg-primary text-primary-foreground font-bold uppercase tracking-[0.15em] hover:bg-primary/90 hover:shadow-[0_0_40px_rgba(220,38,38,0.3)] hover:scale-105 transition-all rounded-md"
-          >
-            <Link to="/merch">Ver Merch</Link>
+        <p className="hero-statement fade-up-delay">Intensidade.<br /><span>Melodia.</span></p>
+        <div className="fade-up-delay-2 mt-9 flex flex-wrap gap-3">
+          <Button asChild size="lg" className="hero-primary gap-3 rounded-none h-14 px-7 uppercase tracking-widest text-xs font-bold">
+            <a href="#lancamento" onClick={(e) => handleAnchorClick(e, 80)}><Play className="h-4 w-4" />Ouça agora</a>
           </Button>
-          <Button
-            asChild
-            variant="outline"
-            size="lg"
-            className="border-white/[0.08] bg-white/[0.02] text-foreground/80 font-bold uppercase tracking-[0.15em] hover:bg-white/[0.06] hover:border-white/[0.15] hover:scale-105 transition-all rounded-md"
-          >
-            <a href="#lancamento" onClick={(e) => handleAnchorClick(e, 80)}>
-              Último Lançamento
-            </a>
+          <Button asChild variant="outline" size="lg" className="rounded-none h-14 px-7 border-white/30 bg-black/20 hover:bg-white/10 text-white uppercase tracking-widest text-xs font-bold gap-4">
+            <Link to="/merch">Ver merch<ArrowUpRight className="h-4 w-4" /></Link>
           </Button>
         </div>
       </div>
+    </div>
 
-      <a
-        href="#lancamento"
-        onClick={(e) => handleAnchorClick(e, 80)}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 animate-bounce"
-        aria-label="Rolar para conteúdo"
-      >
-        <ChevronDown className="h-6 w-6 text-foreground/30 hover:text-primary transition-colors" />
-      </a>
-
-      <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-background via-background/80 to-transparent pointer-events-none" />
-    </section>
-  );
-};
+    <div className="absolute bottom-0 inset-x-0 z-10 container mx-auto px-6 lg:px-12">
+      <div className="flex items-center justify-between gap-6 border-t border-white/20 py-6">
+        <a href="#lancamento" onClick={(e) => handleAnchorClick(e, 80)} className="group flex items-center gap-4 text-xs uppercase tracking-widest text-white/80 hover:text-white transition-colors">
+          Explore o som <ArrowDown className="h-4 w-4 transition-transform group-hover:translate-y-1" />
+        </a>
+        <Link to="/eventos" className="flex items-center gap-2 text-xs uppercase tracking-widest text-white/80 hover:text-white transition-colors">Ao vivo <ArrowUpRight className="h-4 w-4" /></Link>
+      </div>
+    </div>
+  </section>
+);
 
 export default Hero;

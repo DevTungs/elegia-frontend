@@ -46,7 +46,7 @@ const Navigation = () => {
         "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
         scrolled
           ? "bg-background/90 backdrop-blur-2xl border-b border-white/[0.06] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.5)]"
-          : "bg-transparent"
+          : "bg-black/20 border-b border-white/10"
       )}
     >
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 transition-opacity duration-500" />
@@ -70,7 +70,7 @@ const Navigation = () => {
                 className={cn(
                   "relative text-xs font-bold uppercase tracking-[0.15em] transition-all px-4 py-2 rounded-md",
                   isActive(link.to)
-                    ? "text-primary bg-primary/10"
+                    ? "text-white bg-white/10"
                     : "text-foreground/70 hover:text-foreground hover:bg-white/[0.03]"
                 )}
               >
@@ -128,7 +128,7 @@ const Navigation = () => {
                           className={cn(
                             "block px-4 py-3 text-sm font-bold uppercase tracking-wider rounded-md transition-colors",
                             isActive(link.to)
-                              ? "text-primary bg-primary/10"
+                              ? "text-white bg-white/10"
                               : "text-foreground/70 hover:text-foreground hover:bg-white/[0.03]"
                           )}
                         >

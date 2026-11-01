@@ -1,19 +1,8 @@
-import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 import AnimatedSection from "@/components/AnimatedSection";
 
 const LeakedBanner = () => {
-  const [glitchActive, setGlitchActive] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGlitchActive(true);
-      setTimeout(() => setGlitchActive(false), 200);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
   return (
     <section className="relative py-16 md:py-20 overflow-hidden">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_hsl(0_72%_51%_/_0.06)_0%,_transparent_60%)]" />
@@ -26,21 +15,19 @@ const LeakedBanner = () => {
       <div className="relative z-10 container mx-auto px-4">
         <AnimatedSection animation="fade-in" className="max-w-2xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 rounded-sm border border-red-500/30 bg-red-500/10 px-3 py-1 mb-6">
-            <AlertTriangle className="h-3 w-3 text-red-500 animate-pulse" />
+            <AlertTriangle className="h-3 w-3 text-red-400" />
             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-red-400">
               Material Não Autorizado
             </span>
           </div>
 
           <h2
-            className={`text-4xl md:text-6xl uppercase text-zinc-100 tracking-wide mb-3 ${
-              glitchActive ? "glitch-active" : ""
-            }`}
+            className="text-4xl md:text-6xl uppercase text-zinc-100 tracking-wide mb-3"
           >
             Arquivo Interno
           </h2>
 
-          <p className="text-xs md:text-sm uppercase tracking-[0.3em] text-zinc-500 mb-6 typewriter-text">
+          <p className="text-xs md:text-sm uppercase tracking-[0.3em] text-zinc-400 mb-6">
             Material Vazado · Não Divulgue
           </p>
 

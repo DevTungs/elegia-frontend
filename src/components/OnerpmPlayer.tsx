@@ -22,7 +22,7 @@ const OnerpmPlayer = () => {
       <div className="container relative z-10 mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           <AnimatedSection animation="fade-up">
-            <PageHeader eyebrow="Ouça Agora" title="Último Lançamento" />
+            <PageHeader title="Último Lançamento" />
           </AnimatedSection>
 
           <div className="grid lg:grid-cols-5 gap-8 items-start">
@@ -54,7 +54,7 @@ const OnerpmPlayer = () => {
               <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground mb-2">
                 Todas as plataformas
               </p>
-              {platforms.map((platform, index) => (
+              {platforms.map((platform) => (
                 <Button
                   key={platform.name}
                   variant="outline"
@@ -68,7 +68,7 @@ const OnerpmPlayer = () => {
                 </Button>
               ))}
 
-              <Card className="mt-3 surface-elevated border-l-2 border-l-primary/50 border-white/[0.06]">
+              <Card className="mt-3 surface-elevated border-white/[0.06]">
                 <CardContent className="p-4">
                   <p className="text-xs text-foreground/60 font-medium leading-relaxed">
                     Apoie a banda: adicione às suas playlists e ative o sino.
