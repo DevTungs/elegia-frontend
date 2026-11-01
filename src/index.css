@@ -497,3 +497,19 @@ html { scrollbar-color: #a91527 #080808; }
   .live-track-select { grid-template-columns: 24px minmax(0, 1fr); gap: 10px; }
   .live-track-heading, .live-track-row { padding-left: 8px; padding-right: 8px; }
 }
+
+.leaked-alert { background: linear-gradient(115deg, #35070d, #10090a 55%, #28070d); border-block: 1px solid #b9273b; }
+.leaked-ticker { overflow: hidden; background: #a7192b; border-bottom: 1px solid #ff8b9966; padding: 13px 0; }
+.leaked-ticker-track { display: flex; width: max-content; animation: leaked-ticker 32s linear infinite; }
+.leaked-ticker-copy { display: flex; flex-shrink: 0; }
+.leaked-ticker-copy > span { display: flex; align-items: center; gap: 20px; padding: 0 28px; color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.16em; white-space: nowrap; }
+.leaked-sweep { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.leaked-sweep::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 35%, #ef334f18 50%, transparent 65%); animation: leaked-sweep 7s ease-in-out infinite; }
+.leaked-warning-icon { animation: leaked-warning 3.5s ease-in-out infinite; }
+.leaked-access { animation: leaked-access 3.5s ease-in-out infinite; }
+.leaked-alert[data-paused="true"] *, .leaked-alert[data-paused="true"] *::after { animation-play-state: paused; }
+@keyframes leaked-ticker { to { transform: translateX(-50%); } }
+@keyframes leaked-sweep { 0%, 15% { transform: translateX(-100%); } 75%, 100% { transform: translateX(100%); } }
+@keyframes leaked-warning { 0%, 70%, 100% { transform: rotate(0); } 76%, 88% { transform: rotate(-12deg); } 82%, 94% { transform: rotate(12deg); } }
+@keyframes leaked-access { 0%, 65%, 100% { transform: translateY(0); } 78% { transform: translateY(-4px); } 90% { transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .leaked-motion-control { display: none; } }
