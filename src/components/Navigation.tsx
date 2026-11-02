@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Menu, ShoppingBag, X } from "lucide-react";
+import { Menu, ShoppingBag } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useCart } from "@/hooks/useCart";
 import elegiaLogo from "@/assets/elegia-logo.png";
@@ -113,11 +113,6 @@ const Navigation = () => {
                     <span className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">
                       Menu
                     </span>
-                    <SheetClose asChild>
-                      <Button variant="ghost" size="icon" aria-label="Fechar menu">
-                        <X className="h-5 w-5" />
-                      </Button>
-                    </SheetClose>
                   </div>
                   <nav className="flex-1 p-4 space-y-1">
                     {links.map((link) => (
